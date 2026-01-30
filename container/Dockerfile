@@ -1,4 +1,5 @@
 FROM rocker/r-ver:4
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     libcurl4-openssl-dev \
@@ -14,7 +15,9 @@ RUN apt-get update \
     fonts-dejavu \
     && rm -rf /var/lib/apt/lists/*
 
-RUN install2.r --error --skipinstalled --ncpus -1 dplyr readxl stringr ggplot2 cowplot ggrepel ragg readr BiocManager \
+RUN install2.r --error --skipinstalled --ncpus -1 \
+    dplyr readxl stringr ggplot2 cowplot ggrepel ragg readr BiocManager \
+    optparse colorspace \
     && rm -rf /tmp/downloaded_packages
 
 RUN R -q -e 'BiocManager::install(c("rtracklayer", "GenomicRanges", "biomaRt"))'
