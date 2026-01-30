@@ -48,5 +48,11 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
-notes-comments.txt
 data/
+.nextflow/
+.nextflow.*
+work/
+results/
+notes-comments.txt
+*.img
+*.sif
