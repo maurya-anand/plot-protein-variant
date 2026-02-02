@@ -81,7 +81,6 @@ process PLOT_VARIANTS {
     rm NO_FILE*
     ls -ltrh
     transcript=\$(grep '^canonical_transcript' ${id}_transcript.tsv | cut -f2)
-    test-packages.R --gene_name ${id} --gene_domain ${id}_domain.tsv --transcript_id \$transcript
     Plots_Genomic_Exonic_Protein_Effect_sorted.R \
         --gene_name ${id} \
         --gene_domain ${id}_domain.tsv \
