@@ -50,6 +50,7 @@ workflow {
 }
 
 process FETCH_GENE_INFO {
+    tag "${id}"
     publishDir ("${params.outdir}/${id}"), mode: 'copy'
     publishDir ("${params.outdir}/${id}/FETCH_GENE_INFO_log"), mode: 'copy', pattern: ".command.log"
 
@@ -67,6 +68,7 @@ process FETCH_GENE_INFO {
 }
 
 process PLOT_VARIANTS {
+    tag "${id}"
     publishDir ("${params.outdir}/${id}"), mode: 'copy'
     publishDir ("${params.outdir}/${id}/PLOT_VARIANTS_log"), mode: 'copy', pattern: ".command.log"
 
