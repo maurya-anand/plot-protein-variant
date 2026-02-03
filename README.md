@@ -24,7 +24,7 @@ GENE-1
 GENE-2
 ```
 
-- **Configure your reference and parameters** in `nextflow.config`:
+- **Configure your reference and parameters** in `nextflow.config` or simply provide the parameters from the command line:
 
 ```groovy
 params {
@@ -78,17 +78,17 @@ nextflow run main.nf \
 
 ## Components
 
-- dplyr
-- readxl
-- stringr
-- ggplot2
+- BiocManager
+- biomaRt
+- colorspace
 - cowplot
+- dplyr
+- GenomicRanges
+- ggplot2
 - ggrepel
+- optparse
 - ragg
 - readr
-- BiocManager
-- optparse
-- colorspace
+- readxl
 - rtracklayer
-- GenomicRanges
-- biomaRt
+- stringr
