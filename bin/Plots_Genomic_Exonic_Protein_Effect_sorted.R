@@ -1,9 +1,19 @@
 #!/usr/bin/env Rscript
 
+###Was macht dieser Plot:
+##Plot zeigt:
+  #in der Mitte: Genstruktur (Exons skaliert, Domänen eingefärbt)
+  #oben: genomische Varianten (GS) – non-coding, LoF, Missense, Other
+  #unten: Exom-Varianten (ES) – LoF, Missense, Other
+  #darüber: funktionelle Elemente (ENCODE/RefSeq)
+  #ganz unten: Legende
+
 pkgs <- c(
-  "dplyr", "readxl", "rtracklayer", "GenomicRanges", "stringr",
-  "ggplot2", "cowplot", "ggrepel", "biomaRt", "ragg", "readr", "optparse"
+  "dplyr", "readxl", "rtracklayer", "GenomicRanges",
+  "stringr", "ggplot2", "cowplot", "ggrepel",
+  "biomaRt", "ragg", "readr", "optparse", "colorspace"
 )
+
 for (pkg in pkgs) {
   print(paste("Loading:", pkg))
   suppressPackageStartupMessages(library(pkg, character.only = TRUE))
@@ -33,40 +43,14 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 # ###Individuell anpassbare Parameter
-# sanitize_file_arg <- function(x) {
-#   if (is.null(x) || !nzchar(x) || grepl("^NO_FILE_", x)) return(NULL)
-#   return(x)
-# }
 
-# genomic           <- sanitize_file_arg(opt$genomic)
-# genomic_noncoding <- sanitize_file_arg(opt$genomic_noncoding)
-# exonic            <- sanitize_file_arg(opt$exonic)
-# sv                <- sanitize_file_arg(opt$sv)
-# encode_file       <- sanitize_file_arg(opt$encode_file)
-# refseq_file       <- sanitize_file_arg(opt$refseq_file)
-# gnomAD            <- sanitize_file_arg(opt$gnomAD)
-# UK_Biobank        <- sanitize_file_arg(opt$UK_Biobank)
-# colour_phenotypes <- sanitize_file_arg(opt$colour_phenotypes)
 ##Dateipfade einlesen
 genomic           <- opt$genomic
 genomic_noncoding <- opt$genomic_noncoding
 exonic            <- opt$exonic
-sv <- opt$sv
-encode_file <- opt$encode_file
-refseq_file <- opt$refseq_file
-
-# # if (!is.null(opt$genomic_noncoding)){
-# #   genomic_noncoding <- opt$genomic_noncoding
-# # }
-# # if (!is.null(opt$sv)){
-# #   sv <- opt$sv
-# # }
-# # if (!is.null(opt$encode_file)){
-# #   encode_file <- opt$encode_file
-# # }
-# # if (!is.null(opt$refseq_file)){
-# #   refseq_file <- opt$refseq_file
-# # }
+sv                <- opt$sv
+encode_file       <- opt$encode_file
+refseq_file       <- opt$refseq_file
 gnomAD            <- opt$gnomAD
 UK_Biobank        <- opt$UK_Biobank
 colour_phenotypes <- opt$colour_phenotypes
@@ -132,6 +116,7 @@ DENSITY_ADJUST    <- 1       # Glättung (größer = glatter)
 ##Ensembl-Daten
 transcript_id <- opt$transcript_id #Individuell an das Gene of interest anpassen
 
+##Domänen
 domain_tbl <- read_tsv(opt$gene_domain, show_col_types = FALSE)
 domain_input <- domain_tbl %>%
   dplyr::select(domain = name, aa_start = start, aa_end = end)
