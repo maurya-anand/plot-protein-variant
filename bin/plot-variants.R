@@ -2,11 +2,11 @@
 
 ###Was macht dieser Plot:
 ##Plot zeigt:
-  #in der Mitte: Genstruktur (Exons skaliert, Domänen eingefärbt)
-  #oben: genomische Varianten (GS) – non-coding, LoF, Missense, Other
-  #unten: Exom-Varianten (ES) – LoF, Missense, Other
-  #darüber: funktionelle Elemente (ENCODE/RefSeq)
-  #ganz unten: Legende
+#in der Mitte: Genstruktur (Exons skaliert, Domänen eingefärbt)
+#oben: genomische Varianten (GS) – non-coding, LoF, Missense, Other
+#unten: Exom-Varianten (ES) – LoF, Missense, Other
+#darüber: funktionelle Elemente (ENCODE/RefSeq)
+#ganz unten: Legende
 
 pkgs <- c(
   "dplyr", "readxl", "rtracklayer", "GenomicRanges",
@@ -19,26 +19,26 @@ for (pkg in pkgs) {
   suppressPackageStartupMessages(library(pkg, character.only = TRUE))
 }
 
-###Dezimalschreibweise
+##Dezimalschreibweise
 options(scipen = 999)
 options(timeout = 300)
 ##################################################################################
 
 option_list = list(
-    make_option(c("--gene_name"), type="character", default=NULL, help="", metavar="character"),
-    make_option(c("--gene_domain"), type="character", default=NULL, help="", metavar="character"),
-    make_option(c("--transcript_id"), type="character", default=NULL, help="", metavar="character"),
-    make_option(c("--genomic"), type="character", default=NULL, help="", metavar="character"),
-    make_option(c("--genomic_noncoding"), type="character", default=NULL, help="", metavar="character"), 
-    make_option(c("--exonic"), type="character", default=NULL, help="", metavar="character"),
-    make_option(c("--sv"), type="character", default=NULL, help="[default= %default]", metavar="character"),
-    make_option(c("--encode_file"), type="character", default=NULL, help="[default= %default]", metavar="character"), 
-    make_option(c("--refseq_file"), type="character", default=NULL, help="[default= %default]", metavar="character"),
-    make_option(c("--gnomAD"), type="character", default=NULL, help="[default= %default]", metavar="character"),
-    make_option(c("--UK_Biobank"), type="character", default=NULL, help="[default= %default]", metavar="character"),
-    make_option(c("--colour_phenotypes"), type="character", default=NULL, help="[default= %default]", metavar="character") 
+  make_option(c("--gene_name"), type="character", default=NULL, help="", metavar="character"),
+  make_option(c("--gene_domain"), type="character", default=NULL, help="", metavar="character"),
+  make_option(c("--transcript_id"), type="character", default=NULL, help="", metavar="character"),
+  make_option(c("--genomic"), type="character", default=NULL, help="", metavar="character"),
+  make_option(c("--genomic_noncoding"), type="character", default=NULL, help="", metavar="character"), 
+  make_option(c("--exonic"), type="character", default=NULL, help="", metavar="character"),
+  make_option(c("--sv"), type="character", default=NULL, help="[default= %default]", metavar="character"),
+  make_option(c("--encode_file"), type="character", default=NULL, help="[default= %default]", metavar="character"), 
+  make_option(c("--refseq_file"), type="character", default=NULL, help="[default= %default]", metavar="character"),
+  make_option(c("--gnomAD"), type="character", default=NULL, help="[default= %default]", metavar="character"),
+  make_option(c("--UK_Biobank"), type="character", default=NULL, help="[default= %default]", metavar="character"),
+  make_option(c("--colour_phenotypes"), type="character", default=NULL, help="[default= %default]", metavar="character") 
 ); 
- 
+
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
@@ -55,12 +55,35 @@ gnomAD            <- opt$gnomAD
 UK_Biobank        <- opt$UK_Biobank
 colour_phenotypes <- opt$colour_phenotypes
 
+
+
+######################
+# Start is here 
+
+
+
+##Dateipfade einlesen
+#genomic           <- "Data/rando/hpc_test/all_variants_Joey.csv"
+#genomic_noncoding <- ""                                                                                        #bereits gefilterte Datei einlesen
+#exonic            <- "Data/rando/hpc_test/exonic_all_variants_CHD_NM_090226.csv"
+#sv                <- ""                                                                                           #bereits gefilterte Datei einlesen
+#encode_file       <- ""       
+#refseq_file       <- ""
+#gnomAD            <- "Data/rando/hpc_test/gnomad_chiara.csv"
+#UK_Biobank        <- "Data/rando/hpc_test/Exome_CHD_Control_Cohort_only.csv"
+#colour_phenotypes <- "Data/rando/hpc_test/Color_Code.xlsx"
+
+#domain_tbl <- read_tsv("Data/rando/hpc_test/output_HPC/ROBO2/ROBO2_domain.tsv", show_col_types = FALSE)
+
+#transcript_id<-"ENST00000696593"
 ##Filterkriterien_coding
 gene_name <- opt$gene_name
 af_max    <- 0.0001
 cadd_min  <- 25
 revel_min <- 0.5
 ac_max    <- 4
+
+
 
 ##Plot-Parameter
 EXON_SCALE_FACTOR  <-  0.3   #Exonbreite - relativ zur echten genomischen Länge 
@@ -170,15 +193,17 @@ read_table_auto <- function(path, na = c("", "NA"), ...) {
 ##Spaltennamen entsprechend an Datei anpassen
 if (file.exists(genomic)) {
   message("Genomic-Datei gefunden")
-  genomic <- read_table_auto (genomic, na = c("", "NA"))
-  genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <- as.numeric(genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`)
+  #genomic <- read_table_auto (genomic, na = c("", "NA"))
+  genomic <- read_csv(genomic,col_types = cols(`Chr:Pos` = col_character()))
+   genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <- as.numeric(genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`)
   genomic$`PHRED-Score` <- as.numeric(genomic$`PHRED-Score`)
   genomic$`REVEL-Score` <- as.numeric(genomic$`REVEL-Score`)
   
   genomic_small <- genomic %>%
     dplyr::select(`Sample-ID`, 
                   `Phenotype_complete`, 
-                  `Chr:Pos`, 
+                  `Chr:Pos`,
+                  `Ref/Alt`,
                   `RefSeq Genes 110, NCBI`,
                   `Effect (Combined)`,
                   `HGVS c. (Clinically Relevant)`,
@@ -203,6 +228,7 @@ if (file.exists(genomic_noncoding)) {
       `Sample-ID`,
       `Phenotype_complete`,
       `Chr:Pos`,
+      `Ref/Alt`,
       `RefSeq Genes 110, NCBI`,
       `Effect (Combined)`,
       `HGVS c. (Clinically Relevant)`,
@@ -226,6 +252,7 @@ if (file.exists(sv)) {
       `Sample-ID`,
       `Phenotype_complete`,
       `Chr:Pos`,
+      `Ref/Alt`,
       `RefSeq Genes 110, NCBI`,
       `Effect (Combined)`,
       `HGVS g. (Clinically Relevant)`,
@@ -242,16 +269,17 @@ if (file.exists(sv)) {
 ##Spaltennamen entsprechend an Datei anpassen
 if (file.exists(exonic)) {
   message("Exonic-Datei gefunden")
-  exonic <- read_table_auto(exonic, na = c("", "NA"))
+  exonic <- read_csv(exonic,col_types = cols(`Chr:Pos` = col_character()))
   exonic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <- as.numeric(exonic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`)
   exonic$`PHRED-Score` <- as.numeric(exonic$`PHRED-Score`)
   exonic$`REVEL-Score` <- as.numeric(exonic$`REVEL-Score`)
   
   exonic_small <- exonic %>%
     dplyr::select(`Sample-ID`, 
-                  `Phenotype_complete`, 
+                  `Phenotype_complete`, #
                   `Chr:Pos`, 
-                  `RefSeq Genes 110, NCBI`,
+                  `Ref/Alt`,
+                  `RefSeq Genes 110, NCBI`, #
                   `Effect (Combined)`,
                   `HGVS c. (Clinically Relevant)`,
                   `HGVS p. (Clinically Relevant)`,
@@ -336,16 +364,16 @@ if (!is.null(gnomAD) && file.exists(gnomAD)) {
       pos     = as.numeric(.data$pos),
       var_key = paste0(.data$chrom, ":", .data$pos),
       AF_nfe  = as.numeric(gsub(",", ".", as.character(.data$AF_nfe)))
-      ) %>%
-   filter(
-    !is.na(.data$pos),
-    is.na(.data$AF_nfe) | .data$AF_nfe < 0.001
-     )
+    ) %>%
+    filter(
+      !is.na(.data$pos),
+      is.na(.data$AF_nfe) | .data$AF_nfe < 0.001
+    )
   
   message("gnomAD_small n = ", nrow(gnomAD_small))
-  } else {
+} else {
   message("gnomAD Datei nicht gefunden")
-  }
+}
 
 ##non-coding und SV-Datei wird gefiltert eingelesen
 ##es gibt einige Händische Filterschritte die über verschiedene Portale durchgeführt werden müssen
@@ -615,18 +643,18 @@ prepare_variant_df <- function(df) {
     df$Phenotype_complete <- clean_text(df$Phenotype_complete)
   }
   
-   col_hgvs_p <- intersect("HGVS p. (Clinically Relevant)", names(df))[1]
-   col_hgvs_c <- intersect("HGVS c. (Clinically Relevant)", names(df))[1]
+  col_hgvs_p <- intersect("HGVS p. (Clinically Relevant)", names(df))[1]
+  col_hgvs_c <- intersect("HGVS c. (Clinically Relevant)", names(df))[1]
   
-   if (!is.na(col_hgvs_p)) {
-     df$label_raw <- clean_text(df[[col_hgvs_p]])
-     df$label     <- stringr::str_extract(df$label_raw, "p\\.[^,;\\s]+")
-   } else if (!is.na(col_hgvs_c)) {
-     df$label_raw <- clean_text(df[[col_hgvs_c]])
-     df$label     <- stringr::str_extract(df$label_raw, "c\\.[^,;\\s]+")
-   } else {
-     df$label <- NA_character_
-   }
+  if (!is.na(col_hgvs_p)) {
+    df$label_raw <- clean_text(df[[col_hgvs_p]])
+    df$label     <- stringr::str_extract(df$label_raw, "p\\.[^,;\\s]+")
+  } else if (!is.na(col_hgvs_c)) {
+    df$label_raw <- clean_text(df[[col_hgvs_c]])
+    df$label     <- stringr::str_extract(df$label_raw, "c\\.[^,;\\s]+")
+  } else {
+    df$label <- NA_character_
+  }
   
   df$label <- clean_text(df$label)
   df$label[df$label == ""] <- NA_character_
@@ -908,69 +936,69 @@ if (!is.null(vars_genomic_noncoding) && nrow(vars_genomic_noncoding) > 0) {
   
   functional_list <- list()
   
-##ENCODE
-if (file.exists(encode_file)) {
-  encode_gr <- rtracklayer::import(encode_file)
-  seqlevels(encode_gr) <- gsub("^chr", "", seqlevels(encode_gr))
-  encode_gr <- encode_gr[seqnames(encode_gr) == chr_name]
-  encode_hits <- subsetByOverlaps(encode_gr, nc_gr, ignore.strand = TRUE)
-  
-  if (length(encode_hits) > 0) {
-    meta_enc <- as.data.frame(mcols(encode_hits))
+  ##ENCODE
+  if (file.exists(encode_file)) {
+    encode_gr <- rtracklayer::import(encode_file)
+    seqlevels(encode_gr) <- gsub("^chr", "", seqlevels(encode_gr))
+    encode_gr <- encode_gr[seqnames(encode_gr) == chr_name]
+    encode_hits <- subsetByOverlaps(encode_gr, nc_gr, ignore.strand = TRUE)
     
-    element_name <- if (ncol(meta_enc) >= 4) {
-      as.character(meta_enc[[4]])
-    } else if ("name" %in% names(meta_enc)) {
-      as.character(meta_enc$name)
-    } else {
-      paste0("ENCODE_", seq_along(encode_hits))
-    }
+    if (length(encode_hits) > 0) {
+      meta_enc <- as.data.frame(mcols(encode_hits))
       
-    encode_df <- data.frame(
-      genomic_start = start(encode_hits),
-      genomic_end   = end(encode_hits),
-      element_name  = element_name,
-      stringsAsFactors = FALSE
-    ) %>%
-      dplyr::distinct(genomic_start, genomic_end, element_name, .keep_all = TRUE)
-    
-    encode_df$source <- "ENCODE"
-    
-    functional_list[["ENCODE"]] <- encode_df
+      element_name <- if (ncol(meta_enc) >= 4) {
+        as.character(meta_enc[[4]])
+      } else if ("name" %in% names(meta_enc)) {
+        as.character(meta_enc$name)
+      } else {
+        paste0("ENCODE_", seq_along(encode_hits))
+      }
+      
+      encode_df <- data.frame(
+        genomic_start = start(encode_hits),
+        genomic_end   = end(encode_hits),
+        element_name  = element_name,
+        stringsAsFactors = FALSE
+      ) %>%
+        dplyr::distinct(genomic_start, genomic_end, element_name, .keep_all = TRUE)
+      
+      encode_df$source <- "ENCODE"
+      
+      functional_list[["ENCODE"]] <- encode_df
+    }
   }
-}
   
-##RefSeq
-if (file.exists(refseq_file)) {
-  refseq_gr <- rtracklayer::import(refseq_file)
-  seqlevels(refseq_gr) <- gsub("^chr", "", seqlevels(refseq_gr))
-  refseq_gr <- refseq_gr[seqnames(refseq_gr) == chr_name]
-  refseq_hits <- subsetByOverlaps(refseq_gr, nc_gr, ignore.strand = TRUE)
-  
-  if (length(refseq_hits) > 0) {
-    meta_ref <- as.data.frame(mcols(refseq_hits))
+  ##RefSeq
+  if (file.exists(refseq_file)) {
+    refseq_gr <- rtracklayer::import(refseq_file)
+    seqlevels(refseq_gr) <- gsub("^chr", "", seqlevels(refseq_gr))
+    refseq_gr <- refseq_gr[seqnames(refseq_gr) == chr_name]
+    refseq_hits <- subsetByOverlaps(refseq_gr, nc_gr, ignore.strand = TRUE)
     
-    element_name <- if (ncol(meta_ref) >= 4) {
-      as.character(meta_ref[[4]])
-    } else if ("name" %in% names(meta_ref)) {
-      as.character(meta_ref$name)
-    } else {
-      paste0("RefSeq_", seq_along(refseq_hits))
-    }
+    if (length(refseq_hits) > 0) {
+      meta_ref <- as.data.frame(mcols(refseq_hits))
       
-    refseq_df <- data.frame(
-      genomic_start = start(refseq_hits),
-      genomic_end   = end(refseq_hits),
-      element_name  = element_name,
-      stringsAsFactors = FALSE
-    ) %>%
-      dplyr::distinct(genomic_start, genomic_end, element_name, .keep_all = TRUE)
-    
+      element_name <- if (ncol(meta_ref) >= 4) {
+        as.character(meta_ref[[4]])
+      } else if ("name" %in% names(meta_ref)) {
+        as.character(meta_ref$name)
+      } else {
+        paste0("RefSeq_", seq_along(refseq_hits))
+      }
+      
+      refseq_df <- data.frame(
+        genomic_start = start(refseq_hits),
+        genomic_end   = end(refseq_hits),
+        element_name  = element_name,
+        stringsAsFactors = FALSE
+      ) %>%
+        dplyr::distinct(genomic_start, genomic_end, element_name, .keep_all = TRUE)
+      
       refseq_df$source       <- "RefSeq"
-    
-    functional_list[["RefSeq"]] <- refseq_df
+      
+      functional_list[["RefSeq"]] <- refseq_df
+    }
   }
-}
   
   if (length(functional_list) > 0) {
     functional_elements_df <- dplyr::bind_rows(functional_list)
@@ -1021,184 +1049,184 @@ plot_combined_track <- function(vars_genomic_df,
                                 domain_df = NULL,
                                 phenotype_colors = NULL,
                                 functional_elements_df = NULL) {
-tx_min <- TX_MIN
-tx_max <- TX_MAX
-
-##dynamische Y-Achsenbeschriftung
-has_nc <- !is.null(vars_genomic_nc_plot) && nrow(vars_genomic_nc_plot) > 0
-
-if (has_nc) {
-  y_breaks <- c(Y_GENOMIC_NC, Y_GENOMIC_LOF, Y_GENOMIC_MISS, Y_GENOMIC_OTHER,
-                Y_EXOM_OTHER, Y_EXOM_MISS, Y_EXOM_LOF)
-  y_labels <- c("non-coding (GS)", "LoF (GS)", "Missense (GS)", "Other (GS)",
-                "Other (ES)", "Missense (ES)", "LoF (ES)")
-} else {
-  y_breaks <- c(Y_GENOMIC_LOF, Y_GENOMIC_MISS, Y_GENOMIC_OTHER,
-                Y_EXOM_OTHER, Y_EXOM_MISS, Y_EXOM_LOF)
-  y_labels <- c("LoF (GS)", "Missense (GS)", "Other (GS)",
-                "Other (ES)", "Missense (ES)", "LoF (ES)")
-}
-
-##Genom- & Exom-Varianten aufbereiten
-gen_plot <- NULL
-snv_plot <- NULL
-sv_plot  <- NULL
-
-if (!is.null(vars_genomic_df) && nrow(vars_genomic_df) > 0) {
-  gen_plot <- vars_genomic_df %>%
-    dplyr::filter(!is.na(scaled_x)) %>%
-    mutate(
-      y_pos = dplyr::case_when(
-        Effect_simple == "LOF"        ~ Y_GENOMIC_LOF,
-        Effect_simple == "Missense"   ~ Y_GENOMIC_MISS,
-        Effect_simple == "Non-coding" ~ Y_GENOMIC_NC,
-        TRUE                          ~ Y_GENOMIC_OTHER
-      ),
-      x_cluster = floor(scaled_x / X_STACK_TOL)
-    ) %>%
-    group_by(x_cluster, y_pos) %>%
-    arrange(scaled_x, .by_group = TRUE) %>%
-    mutate(
-      x_pos       = scaled_x,
-      stack_index = dplyr::row_number(),
-      y_pos       = y_pos + (stack_index - 1) * STACK_DY * 0.6
-    ) %>%
-    ungroup()
+  tx_min <- TX_MIN
+  tx_max <- TX_MAX
   
-  sv_plot  <- gen_plot %>% dplyr::filter(is_sv)
-  snv_plot <- gen_plot %>% dplyr::filter(!is_sv | is.na(is_sv))
-}
-
-ex_plot <- NULL
-if (!is.null(vars_exomic_df) && nrow(vars_exomic_df) > 0) {
-  ex_plot <- vars_exomic_df %>%
-    dplyr::filter(!is.na(scaled_x)) %>%
-    mutate(
-      y_pos = dplyr::case_when(
-        Effect_simple == "LOF"      ~ Y_EXOM_LOF,
-        Effect_simple == "Missense" ~ Y_EXOM_MISS,
-        TRUE                        ~ Y_EXOM_OTHER
-      ),
-      x_cluster = floor(scaled_x / X_STACK_TOL)
-    ) %>%
-    group_by(x_cluster, y_pos) %>%
-    arrange(scaled_x, .by_group = TRUE) %>%
-    mutate(
-      x_pos       = scaled_x,
-      stack_index = dplyr::row_number(),
-      y_pos       = y_pos - (stack_index - 1) * STACK_DY * 0.6
-    ) %>%
-    ungroup()
-}
-
-##Plot aufbauen
-p <- ggplot() 
-
-separator_y <- c(
-  if (has_nc) Y_GENOMIC_NC - 0.05,
-  Y_GENOMIC_LOF   - 0.05,
-  Y_GENOMIC_MISS  - 0.05,
-  Y_GENOMIC_OTHER - 0.05,
-  0               - 0.05,
-  Y_EXOM_OTHER    - 0.05,
-  Y_EXOM_MISS     - 0.05
-)
-
-p <- p +
-  geom_segment(
-    data = data.frame(y = separator_y),
-    aes(
-      x    = tx_min - INTRON_GAP,
-      xend = tx_max + INTRON_GAP,
-      y    = y,
-      yend = y
-    ),
-    color        = "grey90",
-    linewidth    = 0.4,
-    inherit.aes  = FALSE
-  ) +
-  ## Gen-Basislinie bei y = 0
-  geom_segment(
-    aes(
-      x    = tx_min - INTRON_GAP,
-      xend = tx_max + INTRON_GAP,
-      y    = 0,
-      yend = 0
-    ),
-    linewidth   = GENE_LINE_WIDTH,
-    inherit.aes = FALSE
+  ##dynamische Y-Achsenbeschriftung
+  has_nc <- !is.null(vars_genomic_nc_plot) && nrow(vars_genomic_nc_plot) > 0
+  
+  if (has_nc) {
+    y_breaks <- c(Y_GENOMIC_NC, Y_GENOMIC_LOF, Y_GENOMIC_MISS, Y_GENOMIC_OTHER,
+                  Y_EXOM_OTHER, Y_EXOM_MISS, Y_EXOM_LOF)
+    y_labels <- c("non-coding (GS)", "LoF (GS)", "Missense (GS)", "Other (GS)",
+                  "Other (ES)", "Missense (ES)", "LoF (ES)")
+  } else {
+    y_breaks <- c(Y_GENOMIC_LOF, Y_GENOMIC_MISS, Y_GENOMIC_OTHER,
+                  Y_EXOM_OTHER, Y_EXOM_MISS, Y_EXOM_LOF)
+    y_labels <- c("LoF (GS)", "Missense (GS)", "Other (GS)",
+                  "Other (ES)", "Missense (ES)", "LoF (ES)")
+  }
+  
+  ##Genom- & Exom-Varianten aufbereiten
+  gen_plot <- NULL
+  snv_plot <- NULL
+  sv_plot  <- NULL
+  
+  if (!is.null(vars_genomic_df) && nrow(vars_genomic_df) > 0) {
+    gen_plot <- vars_genomic_df %>%
+      dplyr::filter(!is.na(scaled_x)) %>%
+      mutate(
+        y_pos = dplyr::case_when(
+          Effect_simple == "LOF"        ~ Y_GENOMIC_LOF,
+          Effect_simple == "Missense"   ~ Y_GENOMIC_MISS,
+          Effect_simple == "Non-coding" ~ Y_GENOMIC_NC,
+          TRUE                          ~ Y_GENOMIC_OTHER
+        ),
+        x_cluster = floor(scaled_x / X_STACK_TOL)
+      ) %>%
+      group_by(x_cluster, y_pos) %>%
+      arrange(scaled_x, .by_group = TRUE) %>%
+      mutate(
+        x_pos       = scaled_x,
+        stack_index = dplyr::row_number(),
+        y_pos       = y_pos + (stack_index - 1) * STACK_DY * 0.6
+      ) %>%
+      ungroup()
+    
+    sv_plot  <- gen_plot %>% dplyr::filter(is_sv)
+    snv_plot <- gen_plot %>% dplyr::filter(!is_sv | is.na(is_sv))
+  }
+  
+  ex_plot <- NULL
+  if (!is.null(vars_exomic_df) && nrow(vars_exomic_df) > 0) {
+    ex_plot <- vars_exomic_df %>%
+      dplyr::filter(!is.na(scaled_x)) %>%
+      mutate(
+        y_pos = dplyr::case_when(
+          Effect_simple == "LOF"      ~ Y_EXOM_LOF,
+          Effect_simple == "Missense" ~ Y_EXOM_MISS,
+          TRUE                        ~ Y_EXOM_OTHER
+        ),
+        x_cluster = floor(scaled_x / X_STACK_TOL)
+      ) %>%
+      group_by(x_cluster, y_pos) %>%
+      arrange(scaled_x, .by_group = TRUE) %>%
+      mutate(
+        x_pos       = scaled_x,
+        stack_index = dplyr::row_number(),
+        y_pos       = y_pos - (stack_index - 1) * STACK_DY * 0.6
+      ) %>%
+      ungroup()
+  }
+  
+  ##Plot aufbauen
+  p <- ggplot() 
+  
+  separator_y <- c(
+    if (has_nc) Y_GENOMIC_NC - 0.05,
+    Y_GENOMIC_LOF   - 0.05,
+    Y_GENOMIC_MISS  - 0.05,
+    Y_GENOMIC_OTHER - 0.05,
+    0               - 0.05,
+    Y_EXOM_OTHER    - 0.05,
+    Y_EXOM_MISS     - 0.05
   )
-
-if (!is.null(snv_plot) && nrow(snv_plot) > 0) {
-  p <- p +
-    geom_segment(
-      data = snv_plot,
-      aes(x = x_pos, xend = x_pos,
-          y = 0, yend = TICK_LEN),
-      linewidth = 0.7,
-      inherit.aes = FALSE
-    ) 
-}
-
-if (!is.null(ex_plot) && nrow(ex_plot) > 0) {
-  p <- p +
-    geom_segment(
-      data = ex_plot,
-      aes(x = x_pos, xend = x_pos,
-          y = 0, yend = -TICK_LEN),   
-      linewidth = 0.7,
-      inherit.aes = FALSE
-    ) 
-}
-
-p <- p +
-  geom_rect(
-    data = exon_plot_df,
-    aes(xmin = scaled_start, xmax = scaled_end,
-        ymin = -EXON_HALF_HEIGHT, ymax = EXON_HALF_HEIGHT),
-    fill = "grey97", 
-    color = "black", 
-    linewidth = EXON_BORDER_WIDTH,
-    inherit.aes = FALSE) +
-  
-if (!is.null(vars_genomic_nc_plot) && nrow(vars_genomic_nc_plot) > 0) {
-  
-  func_ticks <- vars_genomic_nc_plot %>%
-    mutate(x_pos = scaled_x)
   
   p <- p +
     geom_segment(
-      data = func_ticks,
+      data = data.frame(y = separator_y),
       aes(
-        x    = x_pos,
-        xend = x_pos,
-        y    = Y_FUNC_RECT_TOP,
-        yend = Y_FUNC_RECT_TOP + 0.05
+        x    = tx_min - INTRON_GAP,
+        xend = tx_max + INTRON_GAP,
+        y    = y,
+        yend = y
       ),
-      linewidth = 0.7,
-      color     = "black",
+      color        = "grey90",
+      linewidth    = 0.4,
+      inherit.aes  = FALSE
+    ) +
+    ## Gen-Basislinie bei y = 0
+    geom_segment(
+      aes(
+        x    = tx_min - INTRON_GAP,
+        xend = tx_max + INTRON_GAP,
+        y    = 0,
+        yend = 0
+      ),
+      linewidth   = GENE_LINE_WIDTH,
       inherit.aes = FALSE
     )
-}
-
-if (!is.null(functional_elements_df) && nrow(functional_elements_df) > 0) {
+  
+  if (!is.null(snv_plot) && nrow(snv_plot) > 0) {
+    p <- p +
+      geom_segment(
+        data = snv_plot,
+        aes(x = x_pos, xend = x_pos,
+            y = 0, yend = TICK_LEN),
+        linewidth = 0.7,
+        inherit.aes = FALSE
+      ) 
+  }
+  
+  if (!is.null(ex_plot) && nrow(ex_plot) > 0) {
+    p <- p +
+      geom_segment(
+        data = ex_plot,
+        aes(x = x_pos, xend = x_pos,
+            y = 0, yend = -TICK_LEN),   
+        linewidth = 0.7,
+        inherit.aes = FALSE
+      ) 
+  }
   
   p <- p +
-     geom_rect(
-      data = functional_elements_df,
-      aes(
-        xmin = scaled_start,
-        xmax = scaled_end,
-        fill = source
-      ),
-      ymin        = Y_FUNC_RECT_BOTTOM,
-      ymax        = Y_FUNC_RECT_TOP,
-      alpha       = 0.6,
-      color       = NA,
-      inherit.aes = FALSE
-    )
-}
-
+    geom_rect(
+      data = exon_plot_df,
+      aes(xmin = scaled_start, xmax = scaled_end,
+          ymin = -EXON_HALF_HEIGHT, ymax = EXON_HALF_HEIGHT),
+      fill = "grey97", 
+      color = "black", 
+      linewidth = EXON_BORDER_WIDTH,
+      inherit.aes = FALSE) +
+    
+    if (!is.null(vars_genomic_nc_plot) && nrow(vars_genomic_nc_plot) > 0) {
+      
+      func_ticks <- vars_genomic_nc_plot %>%
+        mutate(x_pos = scaled_x)
+      
+      p <- p +
+        geom_segment(
+          data = func_ticks,
+          aes(
+            x    = x_pos,
+            xend = x_pos,
+            y    = Y_FUNC_RECT_TOP,
+            yend = Y_FUNC_RECT_TOP + 0.05
+          ),
+          linewidth = 0.7,
+          color     = "black",
+          inherit.aes = FALSE
+        )
+    }
+  
+  if (!is.null(functional_elements_df) && nrow(functional_elements_df) > 0) {
+    
+    p <- p +
+      geom_rect(
+        data = functional_elements_df,
+        aes(
+          xmin = scaled_start,
+          xmax = scaled_end,
+          fill = source
+        ),
+        ymin        = Y_FUNC_RECT_BOTTOM,
+        ymax        = Y_FUNC_RECT_TOP,
+        alpha       = 0.6,
+        color       = NA,
+        inherit.aes = FALSE
+      )
+  }
+  
   if (!is.null(domain_df) && nrow(domain_df) > 0) {
     p <- p +
       geom_rect(
@@ -1211,61 +1239,61 @@ if (!is.null(functional_elements_df) && nrow(functional_elements_df) > 0) {
         inherit.aes = FALSE
       )
   }  
+  
+  p <- p +
+    geom_text(
+      data = exon_plot_df,
+      aes(x = (scaled_start + scaled_end)/2, y = 0, label = exon_id),
+      size = EXON_LABEL_SIZE, 
+      fontface = "bold",
+      color = "black",
+      inherit.aes = FALSE
+    )
+  
+  ##Gemeinsame Fill-Skala für Domänen + funktionelle Elemente
+  
+  fill_values <- c()
+  
+  #Domain-Farben aus domain_input übernehmen
+  if (!is.null(domain_input) && nrow(domain_input) > 0) {
+    domain_colors <- setNames(domain_input$color, domain_input$domain)
+    fill_values <- c(fill_values, domain_colors)
+  }
+  
+  #Funktionelle Elemente automatisch erkennen
+  func_levels <- character(0)
+  func_labels <- character(0)
+  
+  if (!is.null(functional_elements_df) && nrow(functional_elements_df) > 0) {
+    func_levels <- unique(functional_elements_df$source)
+    func_labels <- paste0(func_levels, "-Elements")
     
- p <- p +
-  geom_text(
-    data = exon_plot_df,
-    aes(x = (scaled_start + scaled_end)/2, y = 0, label = exon_id),
-    size = EXON_LABEL_SIZE, 
-    fontface = "bold",
-    color = "black",
-    inherit.aes = FALSE
-  )
-
-##Gemeinsame Fill-Skala für Domänen + funktionelle Elemente
- 
-fill_values <- c()
-
-#Domain-Farben aus domain_input übernehmen
-if (!is.null(domain_input) && nrow(domain_input) > 0) {
- domain_colors <- setNames(domain_input$color, domain_input$domain)
- fill_values <- c(fill_values, domain_colors)
-}
-
-#Funktionelle Elemente automatisch erkennen
-func_levels <- character(0)
-func_labels <- character(0)
-
-if (!is.null(functional_elements_df) && nrow(functional_elements_df) > 0) {
- func_levels <- unique(functional_elements_df$source)
- func_labels <- paste0(func_levels, "-Elements")
- 
-#Farben für functional elements
-func_colors <- setNames(rep("#FF0000", length(func_levels)), func_levels)
-fill_values <- c(fill_values, func_colors)
-}
- 
-#Reihenfolge/Labels automatisch bauen
-domain_levels <- if (!is.null(domain_input) && nrow(domain_input) > 0) domain_input$domain else character(0)
-domain_labels <- gsub("_", " ", domain_levels)
-
-all_levels <- c(domain_levels, func_levels)
-all_labels <- c(domain_labels, func_labels)
- 
-#Scale nur setzen, wenn etwas da ist
-present_levels <- intersect(all_levels, names(fill_values))
-
-if (length(present_levels) > 0) {
- p <- p + scale_fill_manual(
-   values = fill_values[present_levels],
-   name   = "Additional elements",
-   breaks = present_levels,
-   labels = all_labels[match(present_levels, all_levels)]
- )
-}
- 
-##GENOM-Varianten (oben)
-##SNV-Plot
+    #Farben für functional elements
+    func_colors <- setNames(rep("#FF0000", length(func_levels)), func_levels)
+    fill_values <- c(fill_values, func_colors)
+  }
+  
+  #Reihenfolge/Labels automatisch bauen
+  domain_levels <- if (!is.null(domain_input) && nrow(domain_input) > 0) domain_input$domain else character(0)
+  domain_labels <- gsub("_", " ", domain_levels)
+  
+  all_levels <- c(domain_levels, func_levels)
+  all_labels <- c(domain_labels, func_labels)
+  
+  #Scale nur setzen, wenn etwas da ist
+  present_levels <- intersect(all_levels, names(fill_values))
+  
+  if (length(present_levels) > 0) {
+    p <- p + scale_fill_manual(
+      values = fill_values[present_levels],
+      name   = "Additional elements",
+      breaks = present_levels,
+      labels = all_labels[match(present_levels, all_levels)]
+    )
+  }
+  
+  ##GENOM-Varianten (oben)
+  ##SNV-Plot
   if (!is.null(snv_plot) && nrow(snv_plot) > 0) {
     p <- p +
       geom_point(
@@ -1278,8 +1306,8 @@ if (length(present_levels) > 0) {
     
     snv_label <- snv_plot %>%
       dplyr::filter(!is.na(label), !is.na(x_pos), !is.na(y_pos))
-  
-  if (nrow(snv_label) > 0) {
+    
+    if (nrow(snv_label) > 0) {
       p <- p +
         ggrepel::geom_text_repel(
           data = snv_label,
@@ -1295,7 +1323,7 @@ if (length(present_levels) > 0) {
     }
   }
   
-##SV-Plot 
+  ##SV-Plot 
   if (nrow(sv_plot) > 0) {
     p <- p +
       geom_rect(
@@ -1304,21 +1332,21 @@ if (length(present_levels) > 0) {
           xmin  = scaled_start,
           xmax  = scaled_end,
           color = Phenotype_complete,
-         ),
+        ),
         fill  = NA,
         ymin  = Y_GENOMIC_OTHER - SV_HALF_HEIGHT,
         ymax  = Y_GENOMIC_OTHER + SV_HALF_HEIGHT,
         linewidth = 1.0,
         show.legend = FALSE
       )
-      
+    
     sv_label <- sv_plot %>%
       mutate(
         label_x = (scaled_start + scaled_end) / 2,
         label_y = Y_GENOMIC_OTHER + 0.04
       ) %>%
       dplyr::filter(!is.na(label))
-      
+    
     if (nrow(sv_label) > 0) {
       p <- p +
         ggrepel::geom_text_repel(
@@ -1335,21 +1363,21 @@ if (length(present_levels) > 0) {
     }
   }
   
-##EXOM-Varianten (unten)
-##Exom-Plot
-if (!is.null(ex_plot) && nrow(ex_plot) > 0) {
-  p <- p +
-    geom_point(
-      data = ex_plot,
-      aes(x = x_pos, y = y_pos,
-          color = Phenotype_complete,
-          shape = Effect_simple),
-      size = 3
-    )
-  
-  ex_label <- ex_plot %>%
-    dplyr::filter(!is.na(label), !is.na(x_pos), !is.na(y_pos))
-
+  ##EXOM-Varianten (unten)
+  ##Exom-Plot
+  if (!is.null(ex_plot) && nrow(ex_plot) > 0) {
+    p <- p +
+      geom_point(
+        data = ex_plot,
+        aes(x = x_pos, y = y_pos,
+            color = Phenotype_complete,
+            shape = Effect_simple),
+        size = 3
+      )
+    
+    ex_label <- ex_plot %>%
+      dplyr::filter(!is.na(label), !is.na(x_pos), !is.na(y_pos))
+    
     if (nrow(ex_label) > 0) {
       p <- p +
         ggrepel::geom_text_repel(
@@ -1366,60 +1394,60 @@ if (!is.null(ex_plot) && nrow(ex_plot) > 0) {
     }
   }
   
-##Skalen, Legenden & Achsen
-p <- p + scale_shape_manual(values = shape_map, guide = "none")
-
-p <- p + scale_size_manual(
-  values = c(`FALSE` = 3, `TRUE` = 4),  # 3 = nur Genom, 5 = Genom+Exom
-  guide  = "none" 
-)
+  ##Skalen, Legenden & Achsen
+  p <- p + scale_shape_manual(values = shape_map, guide = "none")
   
-if (!is.null(phenotype_colors)) {
-  p <- p + scale_color_manual(values = phenotype_colors,
-                              na.value = "black",
-                              name = "")
-} else {
-  p <- p + scale_color_discrete(name = "")
-}
-
-p <- p + ggtitle(plot_title)       
-
-p <- p +
-  theme_cowplot() +
-  theme(
-    legend.position      = "bottom",
-    legend.justification = "center",
-    legend.box           = "vertical",
-    
-    legend.title = element_text(size = 16),   # ← HIER
-    legend.text  = element_text(size = 16),   # hast du schon
-    
-    axis.line.x  = element_line(color = "black", linewidth = 0.6),
-    axis.text.x  = element_blank(),
-    axis.ticks.x = element_blank(),
-    axis.title.x = element_blank(),
-    axis.line.y  = element_line(color = "black"),
-    axis.ticks.y = element_line(color = "black"),
-    axis.text.y  = element_text(size = 16, hjust = 1),
-    axis.title.y = element_blank(),
-    plot.title   = element_text(size = 20, face = "bold")
-  )+
-
-  xlab(paste0("Transcript: ", transcript_id,
-              "    Shapes: ", shape_legend_text)) +
-  scale_y_continuous(
-    breaks = y_breaks,
-    labels = y_labels,
-    limits = c(-0.50, 0.65)
-  ) +
-  guides(
-    color = guide_legend(override.aes = list(
-      shape = 16,
-      size  = 2,
-      fill  = NA
-    ))
+  p <- p + scale_size_manual(
+    values = c(`FALSE` = 3, `TRUE` = 4),  # 3 = nur Genom, 5 = Genom+Exom
+    guide  = "none" 
   )
-
+  
+  if (!is.null(phenotype_colors)) {
+    p <- p + scale_color_manual(values = phenotype_colors,
+                                na.value = "black",
+                                name = "")
+  } else {
+    p <- p + scale_color_discrete(name = "")
+  }
+  
+  p <- p + ggtitle(plot_title)       
+  
+  p <- p +
+    theme_cowplot() +
+    theme(
+      legend.position      = "bottom",
+      legend.justification = "center",
+      legend.box           = "vertical",
+      
+      legend.title = element_text(size = 16),   # ← HIER
+      legend.text  = element_text(size = 16),   # hast du schon
+      
+      axis.line.x  = element_line(color = "black", linewidth = 0.6),
+      axis.text.x  = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.title.x = element_blank(),
+      axis.line.y  = element_line(color = "black"),
+      axis.ticks.y = element_line(color = "black"),
+      axis.text.y  = element_text(size = 16, hjust = 1),
+      axis.title.y = element_blank(),
+      plot.title   = element_text(size = 20, face = "bold")
+    )+
+    
+    xlab(paste0("Transcript: ", transcript_id,
+                "    Shapes: ", shape_legend_text)) +
+    scale_y_continuous(
+      breaks = y_breaks,
+      labels = y_labels,
+      limits = c(-0.50, 0.65)
+    ) +
+    guides(
+      color = guide_legend(override.aes = list(
+        shape = 16,
+        size  = 2,
+        fill  = NA
+      ))
+    )
+  
   if (strand == -1) {
     p <- p + scale_x_reverse(
       limits = c(tx_max + INTRON_GAP, tx_min - INTRON_GAP)
@@ -1429,8 +1457,8 @@ p <- p +
       limits = c(tx_min - INTRON_GAP, tx_max + INTRON_GAP)
     )
   }
-
-p
+  
+  p
 }
 
 ##Density-Plot UKB
@@ -1486,9 +1514,9 @@ plot_density_panel <- function(x_positions, tx_min, tx_max,
 }
 
 ##Density-Plot gnomAD
- plot_density_panel2 <- function(x_positions2, tx_min, tx_max,
-                               strand = 1, vlines = NULL,
-                               n = 1024, adjust = 1) {
+plot_density_panel2 <- function(x_positions2, tx_min, tx_max,
+                                strand = 1, vlines = NULL,
+                                n = 1024, adjust = 1) {
   
   x_positions2 <- as.numeric(unlist(x_positions2, use.names = FALSE))
   x_positions2 <- x_positions2[is.finite(x_positions2)]
@@ -1521,20 +1549,20 @@ plot_density_panel <- function(x_positions, tx_min, tx_max,
   if (!is.null(vlines) && length(vlines) > 0) {
     vdf2 <- data.frame(x = vlines[is.finite(vlines)])
     p <- p + geom_vline(
-     data = vdf2, 
+      data = vdf2, 
       aes(xintercept = x), 
       linewidth = 0.6, 
       color = "red",
       alpha = 0.8)
-     }
+  }
   
   if (strand == -1) {
-   p <- p + scale_x_reverse(limits = c(tx_max + INTRON_GAP, tx_min - INTRON_GAP))
- } else {
-   p <- p + scale_x_continuous(limits = c(tx_min - INTRON_GAP, tx_max + INTRON_GAP))
- }
+    p <- p + scale_x_reverse(limits = c(tx_max + INTRON_GAP, tx_min - INTRON_GAP))
+  } else {
+    p <- p + scale_x_continuous(limits = c(tx_min - INTRON_GAP, tx_max + INTRON_GAP))
+  }
   
- p
+  p
 }
 
 
@@ -1642,3 +1670,5 @@ ggsave(
   bg       = "white"
 )
 
+write.csv2(genomic_coding_filtered, file =paste0(gene_name, "_genomic_table.csv"), row.names= FALSE, quote = FALSE)
+write.csv2(exonic_coding_filtered, file =paste0(gene_name, "_exonic_table.csv"), row.names= FALSE, quote = FALSE)
