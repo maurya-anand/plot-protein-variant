@@ -69,15 +69,17 @@ process FETCH_GENE_INFO {
 
 process PLOT_VARIANTS {
     tag "${id}"
-    publishDir ("${params.outdir}/${id}"), mode: 'copy', pattern: "*.png"
+    publishDir ("${params.outdir}/${id}"), mode: 'copy', pattern: "*.{png,csv}"
     publishDir ("${params.outdir}/${id}/PLOT_VARIANTS_log"), mode: 'copy', pattern: ".command.log"
 
     input:
     tuple val(id), path("${id}_domain.tsv"), path("${id}_transcript.tsv"), path(genomic_file), path(genomic_noncoding_file), path(exonic_file), path(sv_file), path(encode_file), path(refseq_file), path(gnomAD_file), path(UK_Biobank_file), path(colour_phenotypes_file)
 
     output:
-    path ("${id}_genomic_plot.png"), emit: plot
-    path ".command.log", optional: true
+    path("${id}_genomic_plot.png"), optional: true
+    path(".command.log"), optional: true
+    path("${id}_genomic_table.csv"), optional: true
+    path("${id}_exonic_table.csv"), optional: true
 
     script:
     """
@@ -85,9 +87,10 @@ process PLOT_VARIANTS {
     export XDG_CACHE_HOME="\$PWD/.cache"
     mkdir -p "\$XDG_CACHE_HOME/R/biomaRt"    
     rm NO_FILE*
-    ls -ltrh
     transcript=\$(grep '^canonical_transcript' ${id}_transcript.tsv | cut -f2)
-    Plots_Genomic_Exonic_Protein_Effect_sorted.R \
+    subset_gnomad.sh ${id}_transcript.tsv ${gnomAD_file}
+    set +e
+    plot-variants.R \
         --gene_name ${id} \
         --gene_domain ${id}_domain.tsv \
         --transcript_id \$transcript \
@@ -97,8 +100,18 @@ process PLOT_VARIANTS {
         --sv ${sv_file} \
         --encode_file ${encode_file} \
         --refseq_file ${refseq_file} \
-        --gnomAD ${gnomAD_file} \
+        --gnomAD subset.csv \
         --UK_Biobank ${UK_Biobank_file} \
-        --colour_phenotypes ${colour_phenotypes_file} \
+        --colour_phenotypes ${colour_phenotypes_file}
+    set -e
+    if [ ! -f "${id}_genomic_table.csv" ]; then
+        echo "No variants found in ${id}_genomic_table.csv"
+        echo "No variants found!" > ${id}_genomic_table.csv
+    fi
+    if [ ! -f "${id}_exonic_table.csv" ]; then
+        echo "No variants found in ${id}_exonic_table.csv"
+        echo "No variants found!" > ${id}_exonic_table.csv
+    fi
+    exit 0
     """
 }
