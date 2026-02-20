@@ -21,7 +21,7 @@ for (pkg in pkgs) {
 
 ##Dezimalschreibweise
 options(scipen = 999)
-options(timeout = 300)
+options(timeout = 600)
 ##################################################################################
 
 option_list = list(
@@ -382,7 +382,7 @@ if (!is.null(gnomAD) && file.exists(gnomAD)) {
 ###Plotgrundlagen-Vorbereitung
 
 ##Ensembl / Exon-Informationen laden
-ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl", verbose = TRUE)
+ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl", verbose = TRUE, host="useast.ensembl.org")
 
 exon_positions <- getBM(
   attributes = c("ensembl_transcript_id", "exon_chrom_start", "exon_chrom_end", "rank"),
