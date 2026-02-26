@@ -17,9 +17,18 @@ option_list <- list(
 
 opt <- parse_args(OptionParser(option_list = option_list))
 
+if (is.null(opt$transcript)) {
+  stop("Error: Transcript ID (--transcript) is required.")
+}
+
+if (!file.exists(opt$db)) {
+  stop(sprintf("Error: Database file not found at: %s", opt$db))
+}
+
 db_path <- opt$db
 transcript_id <- opt$transcript
 
+message(sprintf("Processing transcript: %s", transcript_id))
 
 suppressPackageStartupMessages({
   library(ensembldb)
@@ -33,7 +42,7 @@ pkgs <- c(
 )
 
 for (pkg in pkgs) {
-  print(paste("Loading:", pkg))
+  message(paste("Loading:", pkg))
   suppressPackageStartupMessages(library(pkg, character.only = TRUE))
 }
 
@@ -125,7 +134,20 @@ get_transcript_info <- function(sqlite_path, transcript_id) {
 
 # Example (offline):
 # transcript_id <- "ENST00000261917"
+
 res <- get_transcript_info(db_path, transcript_id)
+
+if (is.null(res$exon_positions) || nrow(res$exon_positions) == 0) {
+  message("Exon positions are empty for transcript: ", transcript_id)
+} else {
+  message(sprintf("Finished extracting exon positions for: %s", transcript_id))
+}
+
+if (is.null(res$cds_df) || nrow(res$cds_df) == 0) {
+  message("CDS data frame is empty for transcript: ", transcript_id)
+} else {
+  message(sprintf("Finished extracting cds positions for: %s", transcript_id))
+}
 
 write.csv(res$exon_positions, "exon_positions_offline.csv", row.names=FALSE,quote = FALSE)
 write.csv(res$cds_df, "cds_df_offline.csv", row.names=FALSE,quote = FALSE)
