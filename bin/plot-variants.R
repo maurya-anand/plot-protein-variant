@@ -286,7 +286,6 @@ if (file.exists(exonic)) {
       exonic[[cn]] <- readr::parse_number(exonic[[cn]])
     }
   }
-  head(exonic)
   exonic_small <- exonic %>%
     dplyr::select(`Sample-ID`, 
                   `Phenotype_complete`, #
