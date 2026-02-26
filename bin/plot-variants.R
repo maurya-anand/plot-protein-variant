@@ -11,7 +11,7 @@
 pkgs <- c(
   "dplyr", "readxl", "rtracklayer", "GenomicRanges",
   "stringr", "ggplot2", "cowplot", "ggrepel",
-  "biomaRt", "ragg", "readr", "optparse", "colorspace"
+  "ragg", "readr", "optparse", "colorspace"
 )
 
 for (pkg in pkgs) {
@@ -194,11 +194,17 @@ read_table_auto <- function(path, na = c("", "NA"), ...) {
 if (file.exists(genomic)) {
   message("Genomic-Datei gefunden")
   #genomic <- read_table_auto (genomic, na = c("", "NA"))
-  genomic <- read_csv(genomic,col_types = cols(`Chr:Pos` = col_character()))
-   genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <- as.numeric(genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`)
-  genomic$`PHRED-Score` <- as.numeric(genomic$`PHRED-Score`)
-  genomic$`REVEL-Score` <- as.numeric(genomic$`REVEL-Score`)
-  
+  # genomic <- read_csv(genomic,col_types = cols(`Chr:Pos` = col_character()))
+  # genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <- as.numeric(genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`)
+  # genomic$`PHRED-Score` <- as.numeric(genomic$`PHRED-Score`)
+  # genomic$`REVEL-Score` <- as.numeric(genomic$`REVEL-Score`)
+  genomic <- read_csv(genomic, col_types = cols(.default = col_character(), `Chr:Pos` = col_character()), na = c("", "NA"))
+  num_cols <- c("gnomAD Genomes Variant Frequencies 4.0 v2, BROAD", "PHRED-Score","REVEL-Score")
+  for (cn in num_cols) {
+    if (cn %in% names(genomic)) {
+      genomic[[cn]] <- readr::parse_number(genomic[[cn]])
+    }
+  }
   genomic_small <- genomic %>%
     dplyr::select(`Sample-ID`, 
                   `Phenotype_complete`, 
@@ -269,11 +275,17 @@ if (file.exists(sv)) {
 ##Spaltennamen entsprechend an Datei anpassen
 if (file.exists(exonic)) {
   message("Exonic-Datei gefunden")
-  exonic <- read_csv(exonic,col_types = cols(`Chr:Pos` = col_character()))
-  exonic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <- as.numeric(exonic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`)
-  exonic$`PHRED-Score` <- as.numeric(exonic$`PHRED-Score`)
-  exonic$`REVEL-Score` <- as.numeric(exonic$`REVEL-Score`)
-  
+  # exonic <- read_csv(exonic,col_types = cols(`Chr:Pos` = col_character()))
+  # exonic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <- as.numeric(exonic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`)
+  # exonic$`PHRED-Score` <- as.numeric(exonic$`PHRED-Score`)
+  # exonic$`REVEL-Score` <- as.numeric(exonic$`REVEL-Score`)
+  exonic <- read_csv(exonic, col_types = cols(.default = col_character(), `Chr:Pos` = col_character()), na = c("", "NA"))
+  num_cols <- c("gnomAD Genomes Variant Frequencies 4.0 v2, BROAD", "PHRED-Score","REVEL-Score")
+  for (cn in num_cols) {
+    if (cn %in% names(exonic)) {
+      exonic[[cn]] <- readr::parse_number(exonic[[cn]])
+    }
+  }
   exonic_small <- exonic %>%
     dplyr::select(`Sample-ID`, 
                   `Phenotype_complete`, #
@@ -382,14 +394,17 @@ if (!is.null(gnomAD) && file.exists(gnomAD)) {
 ###Plotgrundlagen-Vorbereitung
 
 ##Ensembl / Exon-Informationen laden
-ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl", verbose = TRUE, host="useast.ensembl.org")
+# ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl", verbose = TRUE, host="useast.ensembl.org")
 
-exon_positions <- getBM(
-  attributes = c("ensembl_transcript_id", "exon_chrom_start", "exon_chrom_end", "rank"),
-  filters    = "ensembl_transcript_id",
-  values     = transcript_id,
-  mart       = ensembl
-)
+# exon_positions <- getBM(
+#   attributes = c("ensembl_transcript_id", "exon_chrom_start", "exon_chrom_end", "rank"),
+#   filters    = "ensembl_transcript_id",
+#   values     = transcript_id,
+#   mart       = ensembl
+# )
+
+exon_positions <- readRDS("exon_positions.rds")
+cds_df         <- readRDS("cds_df.rds")
 
 if (nrow(exon_positions) == 0) {
   stop("Für das Transkript ", transcript_id, " wurden keine Exon-Informationen gefunden.")
@@ -495,15 +510,15 @@ summary(gnomAD_scaled_x)
 
 ##Domänen (AA-Positionen → genomisch → Plot-Koordinaten)
 ##CDS-Informationen für das aktuelle Transkript holen
-cds_df <- getBM(
-  attributes = c("ensembl_transcript_id",
-                 "cds_start", "cds_end", 
-                 "exon_chrom_start", "exon_chrom_end",
-                 "rank", "chromosome_name", "strand"),
-  filters = "ensembl_transcript_id",
-  values  = transcript_id,
-  mart    = ensembl
-)
+# cds_df <- getBM(
+#   attributes = c("ensembl_transcript_id",
+#                  "cds_start", "cds_end", 
+#                  "exon_chrom_start", "exon_chrom_end",
+#                  "rank", "chromosome_name", "strand"),
+#   filters = "ensembl_transcript_id",
+#   values  = transcript_id,
+#   mart    = ensembl
+# )
 
 cds_df <- cds_df %>% arrange(cds_start)
 strand <- unique(cds_df$strand)

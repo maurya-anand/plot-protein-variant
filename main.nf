@@ -90,6 +90,7 @@ process PLOT_VARIANTS {
     transcript=\$(grep '^canonical_transcript' ${id}_transcript.tsv | cut -f2)
     subset_gnomad.sh ${id}_transcript.tsv ${gnomAD_file}
     set +e
+    read-from-ensembldb.R -t \$transcript
     plot-variants.R \
         --gene_name ${id} \
         --gene_domain ${id}_domain.tsv \
