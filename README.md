@@ -64,10 +64,14 @@ nextflow run main.nf \
 ├── <GENE-1>
 │   ├── <GENE-1>_domain.tsv
 │   ├── <GENE-1>_transcript.tsv
+│   ├── <GENE-1>_exonic_table.csv
+│   ├── <GENE-1>_genomic_table.csv
 │   └── <GENE-1>_genomic_plot.png
 └── <GENE-2>
     ├── <GENE-2>_domain.tsv
     ├── <GENE-2>_transcript.tsv
+    ├── <GENE-2>_exonic_table.csv
+    ├── <GENE-2>_genomic_table.csv
     └── <GENE-2>_genomic_plot.png
 ```
 
@@ -79,10 +83,11 @@ nextflow run main.nf \
 ## Components
 
 - BiocManager
-- biomaRt
 - colorspace
 - cowplot
 - dplyr
+- data.table
+- ensembldb
 - GenomicRanges
 - ggplot2
 - ggrepel
@@ -92,3 +97,4 @@ nextflow run main.nf \
 - readxl
 - rtracklayer
 - stringr
+- tidyr
