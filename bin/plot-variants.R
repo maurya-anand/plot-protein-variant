@@ -174,6 +174,7 @@ read_table_auto <- function(path, na = c("", "NA"), ...) {
       file = path,
       delim = delim,
       na = na,
+      col_types = readr::cols(.default = readr::col_character()),
       show_col_types = FALSE,
       progress = FALSE,
       name_repair = "minimal",   #WICHTIG: Namen NICHT reparieren
