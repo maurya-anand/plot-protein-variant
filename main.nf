@@ -11,13 +11,15 @@ workflow {
 
     def genomic_ch = channel.fromPath(params.genomic)
 
-    def exonic_ch = channel.fromPath(params.exonic)
-
     def gnomad_ch = channel.fromPath(params.gnomAD)
 
     def uk_biobank_ch = channel.fromPath(params.uk_Biobank)
 
     def colour_phenotypes_ch = channel.fromPath(params.colour_phenotypes)
+
+    def exonic_ch = params.exonic
+        ? channel.fromPath(params.exonic)
+        : channel.of(file('NO_FILE_EXONIC'))
 
     def genomic_noncoding_ch = params.genomic_noncoding
         ? channel.fromPath(params.genomic_noncoding)
