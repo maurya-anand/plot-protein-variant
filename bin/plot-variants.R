@@ -1202,7 +1202,7 @@ plot_combined_track <- function(vars_genomic_df,
       fill = "grey97", 
       color = "black", 
       linewidth = EXON_BORDER_WIDTH,
-      inherit.aes = FALSE) +
+      inherit.aes = FALSE)
     
     if (!is.null(vars_genomic_nc_plot) && nrow(vars_genomic_nc_plot) > 0) {
       
