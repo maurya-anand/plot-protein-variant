@@ -78,8 +78,8 @@ colour_phenotypes <- opt$colour_phenotypes
 #transcript_id<-"ENST00000696593"
 ##Filterkriterien_coding
 gene_name <- opt$gene_name
-af_max    <- 0.0001
-cadd_min  <- 25
+af_max    <- 0.001
+cadd_min  <- 20
 revel_min <- 0.5
 ac_max    <- 4
 
@@ -203,7 +203,7 @@ if (file.exists(genomic)) {
   num_cols <- c("gnomAD Genomes Variant Frequencies 4.0 v2, BROAD", "PHRED-Score","REVEL-Score")
   for (cn in num_cols) {
     if (cn %in% names(genomic)) {
-      genomic[[cn]] <- readr::parse_number(genomic[[cn]])
+      genomic[[cn]] <- as.numeric(genomic[[cn]])
     }
   }
   genomic_small <- genomic %>%
@@ -284,7 +284,7 @@ if (file.exists(exonic)) {
   num_cols <- c("gnomAD Genomes Variant Frequencies 4.0 v2, BROAD", "PHRED-Score","REVEL-Score")
   for (cn in num_cols) {
     if (cn %in% names(exonic)) {
-      exonic[[cn]] <- readr::parse_number(exonic[[cn]])
+      exonic[[cn]] <- as.numeric(exonic[[cn]])
     }
   }
   exonic_small <- exonic %>%
@@ -310,12 +310,10 @@ if (!is.null(genomic_small) && nrow(genomic_small) > 0) {
   message("Genomic_small-Datei gefunden")
   genomic_coding_filtered <- genomic_small %>%
     filter(
-      grepl(paste0("\\b", gene_name, "\\b"), `RefSeq Genes 110, NCBI`),               
+      grepl(paste0("\\b", gene_name, "\\b"), `RefSeq Genes 110, NCBI`),
       (is.na(`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`) |
-         `gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <= af_max),  
-      #(`PHRED-Score` >= cadd_min | `REVEL-Score` >= revel_min),      #Filterung REVEL oder CADD
-      `PHRED-Score` >= cadd_min,
-      `REVEL-Score` >= revel_min,
+         `gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <= af_max),
+      (`PHRED-Score` >= cadd_min | `REVEL-Score` >= revel_min),      #Filterung REVEL oder CADD
       `Alt Allele Counts (AC)` <= ac_max)
 } else {
   genomic_coding_filtered <- NULL 
@@ -329,9 +327,7 @@ if (!is.null(exonic_small) && nrow(exonic_small) > 0) {
       grepl(paste0("\\b", gene_name, "\\b"), `RefSeq Genes 110, NCBI`),
       (is.na(`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`) |
          `gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <= af_max),
-      #(`PHRED-Score` >= cadd_min | `REVEL-Score` >= revel_min),      #Filterung REVEL oder CADD
-      `PHRED-Score` >= cadd_min,
-      `REVEL-Score` >= revel_min,
+      (`PHRED-Score` >= cadd_min | `REVEL-Score` >= revel_min),      #Filterung REVEL oder CADD
       `Alt Allele Counts (AC)` <= ac_max)
 } else {
   exonic_coding_filtered <- NULL
@@ -556,7 +552,7 @@ aa_to_genomic <- function(aa_start, aa_end, cds_df, strand) {
       
       offset <- overlap_start - cds_s
       
-      if (strand == "+") {
+      if (strand == 1) {
         genomic_start <- cds_df$exon_chrom_start[i] + offset
         genomic_end   <- genomic_start + (overlap_end - overlap_start)
       } else {
@@ -1686,5 +1682,5 @@ ggsave(
   bg       = "white"
 )
 
-write.csv2(genomic_coding_filtered, file =paste0(gene_name, "_genomic_table.csv"), row.names= FALSE, quote = FALSE)
-write.csv2(exonic_coding_filtered, file =paste0(gene_name, "_exonic_table.csv"), row.names= FALSE, quote = FALSE)
+write.csv2(vars_genomic_all, file =paste0(gene_name, "_genomic_table.csv"), row.names= FALSE, quote = FALSE)
+write.csv2(vars_exonic_all, file =paste0(gene_name, "_exonic_table.csv"), row.names= FALSE, quote = FALSE)
