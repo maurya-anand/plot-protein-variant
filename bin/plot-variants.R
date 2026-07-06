@@ -169,7 +169,7 @@ read_table_auto <- function(path, na = c("", "NA"), ...) {
   }
   
   if (ext %in% c("csv", "tsv", "txt")) {
-    delim <- if (ext == "tsv") "\t" else ","
+    delim <- if (ext == "tsv") "\t" else ";"
     return(readr::read_delim(
       file = path,
       delim = delim,
@@ -198,7 +198,7 @@ if (file.exists(genomic)) {
   # genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <- as.numeric(genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`)
   # genomic$`PHRED-Score` <- as.numeric(genomic$`PHRED-Score`)
   # genomic$`REVEL-Score` <- as.numeric(genomic$`REVEL-Score`)
-  genomic <- read_csv(genomic, col_types = cols(.default = col_character(), `Chr:Pos` = col_character()), na = c("", "NA"))
+  genomic <- read_csv2(genomic, col_types = cols(.default = col_character(), `Chr:Pos` = col_character()), na = c("", "NA"))
   num_cols <- c("gnomAD Genomes Variant Frequencies 4.0 v2, BROAD", "PHRED-Score","REVEL-Score")
   for (cn in num_cols) {
     if (cn %in% names(genomic)) {
@@ -279,7 +279,7 @@ if (file.exists(exonic)) {
   # exonic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <- as.numeric(exonic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`)
   # exonic$`PHRED-Score` <- as.numeric(exonic$`PHRED-Score`)
   # exonic$`REVEL-Score` <- as.numeric(exonic$`REVEL-Score`)
-  exonic <- read_csv(exonic, col_types = cols(.default = col_character(), `Chr:Pos` = col_character()), na = c("", "NA"))
+  exonic <- read_csv2(exonic, col_types = cols(.default = col_character(), `Chr:Pos` = col_character()), na = c("", "NA"))
   num_cols <- c("gnomAD Genomes Variant Frequencies 4.0 v2, BROAD", "PHRED-Score","REVEL-Score")
   for (cn in num_cols) {
     if (cn %in% names(exonic)) {
