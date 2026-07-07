@@ -22,6 +22,7 @@ for (pkg in pkgs) {
 ##Dezimalschreibweise
 options(scipen = 999)
 options(timeout = 600)
+set.seed(42)
 ##################################################################################
 
 option_list = list(
@@ -96,8 +97,8 @@ Y_GENOMIC_LOF      <-  0.50  #Höhe LoF-Varianten Genom
 Y_GENOMIC_MISS     <-  0.35  #Höhe Missense-Varianten Genom
 Y_GENOMIC_OTHER    <-  0.15  #Höhe Other-Varianten Genom
 Y_EXOM_OTHER       <- -0.15  #Höhe Other-Varianten Exom
-Y_EXOM_MISS        <- -0.30  #Höhe Missense-Varianten Exom
-Y_EXOM_LOF         <- -0.45  #Höhe LoF-Varianten Exom
+Y_EXOM_MISS        <- -0.35  #Höhe Missense-Varianten Exom
+Y_EXOM_LOF         <- -0.50  #Höhe LoF-Varianten Exom
 LABEL_NUDGE_X      <-  0     #Horizontale Position der Labels vom Punkt
 LABEL_ANGLE        <-  2     #Winkel der Label
 TICK_LEN           <-  0.1   #Länge der Ticks coding nach oben/unten
