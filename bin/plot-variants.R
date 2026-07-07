@@ -1294,7 +1294,7 @@ plot_combined_track <- function(vars_genomic_df,
       values = fill_values[present_levels],
       name   = "Additional elements",
       breaks = present_levels,
-      labels = str_wrap(all_labels[match(present_levels, all_levels)], width = 25)
+      labels = str_wrap(all_labels[match(present_levels, all_levels)], width = 35)
     )
   }
   
@@ -1412,10 +1412,10 @@ plot_combined_track <- function(vars_genomic_df,
     p <- p + scale_color_manual(values = phenotype_colors,
                                 na.value = "black",
                                 name = "",
-                                labels = function(x) str_wrap(x, width = 25))
+                                labels = function(x) str_wrap(x, width = 35))
   } else {
     p <- p + scale_color_discrete(name = "",
-                                   labels = function(x) str_wrap(x, width = 25))
+                                   labels = function(x) str_wrap(x, width = 35))
   }
   
   p <- p + ggtitle(plot_title)
@@ -1433,8 +1433,7 @@ plot_combined_track <- function(vars_genomic_df,
       legend.box           = "vertical",
 
       legend.title = element_text(size = 20),
-      legend.text  = element_text(size = 13),
-      legend.spacing.x = unit(0.6, "cm"),
+      legend.text  = element_text(size = 13, margin = margin(r = 25, unit = "pt")),
       legend.spacing.y = unit(0.3, "cm"),
 
       axis.line.x  = element_line(color = "black", linewidth = 0.6),
@@ -1461,8 +1460,8 @@ plot_combined_track <- function(vars_genomic_df,
         shape = 16,
         size  = 2,
         fill  = NA
-      ), nrow = 4, byrow = TRUE),
-      fill = guide_legend(nrow = 2, byrow = TRUE)
+      ), ncol = 4, byrow = TRUE),
+      fill = guide_legend(ncol = 3, byrow = TRUE)
     )
   
   if (strand == -1) {
