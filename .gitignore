@@ -56,3 +56,5 @@ results/
 notes-comments.txt
 *.img
 *.sif
+*.err
+*.out
