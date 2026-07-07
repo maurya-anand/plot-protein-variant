@@ -1433,8 +1433,7 @@ plot_combined_track <- function(vars_genomic_df,
       legend.box           = "vertical",
 
       legend.title = element_text(size = 20),
-      legend.text  = element_text(size = 13, margin = margin(r = 25, unit = "pt")),
-      legend.spacing.y = unit(0.3, "cm"),
+      legend.text  = element_text(size = 20),
 
       axis.line.x  = element_line(color = "black", linewidth = 0.6),
       axis.text.x  = element_blank(),
@@ -1460,8 +1459,7 @@ plot_combined_track <- function(vars_genomic_df,
         shape = 16,
         size  = 2,
         fill  = NA
-      ), ncol = 4, byrow = TRUE),
-      fill = guide_legend(ncol = 3, byrow = TRUE)
+      ))
     )
   
   if (strand == -1) {
