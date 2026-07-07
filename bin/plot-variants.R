@@ -1294,7 +1294,7 @@ plot_combined_track <- function(vars_genomic_df,
       values = fill_values[present_levels],
       name   = "Additional elements",
       breaks = present_levels,
-      labels = all_labels[match(present_levels, all_levels)]
+      labels = str_wrap(all_labels[match(present_levels, all_levels)], width = 25)
     )
   }
   
@@ -1411,9 +1411,11 @@ plot_combined_track <- function(vars_genomic_df,
   if (!is.null(phenotype_colors)) {
     p <- p + scale_color_manual(values = phenotype_colors,
                                 na.value = "black",
-                                name = "")
+                                name = "",
+                                labels = function(x) str_wrap(x, width = 25))
   } else {
-    p <- p + scale_color_discrete(name = "")
+    p <- p + scale_color_discrete(name = "",
+                                   labels = function(x) str_wrap(x, width = 25))
   }
   
   p <- p + ggtitle(plot_title)
@@ -1431,7 +1433,9 @@ plot_combined_track <- function(vars_genomic_df,
       legend.box           = "vertical",
 
       legend.title = element_text(size = 20),
-      legend.text  = element_text(size = 20),
+      legend.text  = element_text(size = 13),
+      legend.spacing.x = unit(0.6, "cm"),
+      legend.spacing.y = unit(0.3, "cm"),
 
       axis.line.x  = element_line(color = "black", linewidth = 0.6),
       axis.text.x  = element_blank(),
@@ -1457,7 +1461,8 @@ plot_combined_track <- function(vars_genomic_df,
         shape = 16,
         size  = 2,
         fill  = NA
-      ))
+      ), nrow = 4, byrow = TRUE),
+      fill = guide_legend(nrow = 2, byrow = TRUE)
     )
   
   if (strand == -1) {
