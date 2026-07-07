@@ -600,6 +600,24 @@ clean_text <- function(x) {
   trimws(x)
 }
 
+##Legenden-Label kürzen: an erstem Komma abschneiden, sonst auf n Wörter, mit "..." wenn gekürzt
+truncate_words <- function(x, n = 4) {
+  vapply(as.character(x), function(s) {
+    truncated <- FALSE
+    if (grepl(",", s, fixed = TRUE)) {
+      s <- sub(",.*$", "", s)
+      truncated <- TRUE
+    }
+    words <- strsplit(trimws(s), "\\s+")[[1]]
+    if (length(words) > n) {
+      words <- words[seq_len(n)]
+      truncated <- TRUE
+    }
+    s <- paste(words, collapse = " ")
+    if (truncated) paste0(s, "...") else s
+  }, character(1), USE.NAMES = FALSE)
+}
+
 ##################################################################################
 ###Variantendaten-Vorbereitung
 
@@ -1294,7 +1312,7 @@ plot_combined_track <- function(vars_genomic_df,
       values = fill_values[present_levels],
       name   = "Additional elements",
       breaks = present_levels,
-      labels = str_wrap(all_labels[match(present_levels, all_levels)], width = 35)
+      labels = truncate_words(all_labels[match(present_levels, all_levels)], n = 4)
     )
   }
   
@@ -1411,11 +1429,9 @@ plot_combined_track <- function(vars_genomic_df,
   if (!is.null(phenotype_colors)) {
     p <- p + scale_color_manual(values = phenotype_colors,
                                 na.value = "black",
-                                name = "",
-                                labels = function(x) str_wrap(x, width = 35))
+                                name = "")
   } else {
-    p <- p + scale_color_discrete(name = "",
-                                   labels = function(x) str_wrap(x, width = 35))
+    p <- p + scale_color_discrete(name = "")
   }
   
   p <- p + ggtitle(plot_title)
@@ -1432,8 +1448,8 @@ plot_combined_track <- function(vars_genomic_df,
       legend.justification = "center",
       legend.box           = "vertical",
 
-      legend.title = element_text(size = 20),
-      legend.text  = element_text(size = 20),
+      legend.title = element_text(size = 20, margin = margin(r = 40, unit = "pt")),
+      legend.text  = element_text(size = 20, margin = margin(l = 10, r = 40, unit = "pt")),
 
       axis.line.x  = element_line(color = "black", linewidth = 0.6),
       axis.text.x  = element_blank(),
