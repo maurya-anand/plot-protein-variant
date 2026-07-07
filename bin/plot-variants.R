@@ -91,9 +91,9 @@ INTRON_GAP         <-  250   #Intronbreite
 EXON_HALF_HEIGHT   <-  0.03  #Exon-Höhe - Gesamthöhe 2*Exon_Half_Height
 STACK_DY           <-  0.05  #vertikaler Abstand zwischen gestapelten Varianten
 X_STACK_TOL        <-  400   #Breite eines horizontalen "x-Clusters" in der nahe beieinanderliegende Varianten gestapelt werden - je größer, desto mehr Varianten werden gestapelt
-Y_GENOMIC_NC       <-  0.60  #Höhe NC-Varianten Genom
-Y_GENOMIC_LOF      <-  0.45  #Höhe LoF-Varianten Genom
-Y_GENOMIC_MISS     <-  0.30  #Höhe Missense-Varianten Genom
+Y_GENOMIC_NC       <-  0.75  #Höhe NC-Varianten Genom
+Y_GENOMIC_LOF      <-  0.50  #Höhe LoF-Varianten Genom
+Y_GENOMIC_MISS     <-  0.35  #Höhe Missense-Varianten Genom
 Y_GENOMIC_OTHER    <-  0.15  #Höhe Other-Varianten Genom
 Y_EXOM_OTHER       <- -0.15  #Höhe Other-Varianten Exom
 Y_EXOM_MISS        <- -0.30  #Höhe Missense-Varianten Exom
@@ -134,7 +134,7 @@ Y_LABEL_TEXT <- c(           #Name der Labels auf Y-Achse
 ##Density-Plot
 DENSITY_HEIGHT    <- 0.10    # Höhe des Density-Tracks
 DENSITY_N         <- 1024    # Auflösung der Kurve
-DENSITY_ADJUST    <- 1       # Glättung (größer = glatter)
+DENSITY_ADJUST    <- 3       # Glättung (größer = glatter)
 
 ##Ensembl-Daten
 transcript_id <- opt$transcript_id #Individuell an das Gene of interest anpassen
@@ -151,40 +151,12 @@ domain_input$color <- domain_colors[domain_input$domain]
 ##Plottitel
 plot_title <- paste0(
   gene_name, " - Variant display\n",
-  "AF (gnomAD v3 & v4) < ", af_max,
+  "AF (gnomAD v4) < ", af_max,
   ", REVEL > ", revel_min,
-  ", CADD > ", cadd_min
+  " or CADD > ", cadd_min
 )
 
 ##nach dem Part Datein einlesen, vorberieten und filtern muss nichts mehr individuell angepast werden, außer man möchte die Schriftgröße oder so nochmal ändern
-##################################################################################
-##Helper fürs einlesen der Datein
-read_table_auto <- function(path, na = c("", "NA"), ...) {
-  if (is.null(path) || !nzchar(path) || !file.exists(path)) return(NULL)
-  
-  ext <- tolower(tools::file_ext(path))
-  
-  if (ext %in% c("xlsx", "xls")) {
-    return(readxl::read_excel(path = path, na = na, ...))
-  }
-  
-  if (ext %in% c("csv", "tsv", "txt")) {
-    delim <- if (ext == "tsv") "\t" else ";"
-    return(readr::read_delim(
-      file = path,
-      delim = delim,
-      na = na,
-      col_types = readr::cols(.default = readr::col_character()),
-      show_col_types = FALSE,
-      progress = FALSE,
-      name_repair = "minimal",   #WICHTIG: Namen NICHT reparieren
-      ...
-    ))
-  }
-  
-  stop("Unbekanntes Dateiformat: ", ext, " (", path, ")")
-}
-
 ##################################################################################
 ###Daten einlesen, vorbereiten und filtern
 ###Wenn die Datei nicht existiert, wird sie auf Null gesetzt und das Skript geht trotzdem
@@ -194,7 +166,6 @@ read_table_auto <- function(path, na = c("", "NA"), ...) {
 ##Spaltennamen entsprechend an Datei anpassen
 if (file.exists(genomic)) {
   message("Genomic-Datei gefunden")
-  #genomic <- read_table_auto (genomic, na = c("", "NA"))
   # genomic <- read_csv(genomic,col_types = cols(`Chr:Pos` = col_character()))
   # genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` <- as.numeric(genomic$`gnomAD Genomes Variant Frequencies 4.0 v2, BROAD`)
   # genomic$`PHRED-Score` <- as.numeric(genomic$`PHRED-Score`)
@@ -207,10 +178,9 @@ if (file.exists(genomic)) {
     }
   }
   genomic_small <- genomic %>%
-    dplyr::select(`Sample-ID`, 
-                  `Phenotype_complete`, 
+    dplyr::select(`Sample-ID`,
+                  `Phenotype_complete`,
                   `Chr:Pos`,
-                  `Ref/Alt`,
                   `RefSeq Genes 110, NCBI`,
                   `Effect (Combined)`,
                   `HGVS c. (Clinically Relevant)`,
@@ -228,14 +198,14 @@ if (file.exists(genomic)) {
 ##SPaltennamen entsprechend an Datei anpassen
 if (file.exists(genomic_noncoding)) {
   message("Noncoding-Datei gefunden")
-  genomic_noncoding <- read_table_auto(genomic_noncoding, na = c("", "NA"))
-  
+  genomic_noncoding <- read_csv2(genomic_noncoding, na = c("", "NA"),
+                                 col_types = cols(.default = col_character()))
+
   genomic_noncoding_small <- genomic_noncoding %>%
     dplyr::select(
       `Sample-ID`,
       `Phenotype_complete`,
       `Chr:Pos`,
-      `Ref/Alt`,
       `RefSeq Genes 110, NCBI`,
       `Effect (Combined)`,
       `HGVS c. (Clinically Relevant)`,
@@ -252,14 +222,14 @@ if (file.exists(genomic_noncoding)) {
 ##Spaltennamen entsprechend an Datei anpassen
 if (file.exists(sv)) {
   message("SV-Datei gefunden")
-  sv_raw <- read_table_auto(sv, na = c("", "NA"))
-  
+  sv_raw <- read_csv2(sv, na = c("", "NA"),
+                      col_types = cols(.default = col_character()))
+
   sv_small <- sv_raw %>%
     dplyr::select(
       `Sample-ID`,
       `Phenotype_complete`,
       `Chr:Pos`,
-      `Ref/Alt`,
       `RefSeq Genes 110, NCBI`,
       `Effect (Combined)`,
       `HGVS g. (Clinically Relevant)`,
@@ -288,10 +258,9 @@ if (file.exists(exonic)) {
     }
   }
   exonic_small <- exonic %>%
-    dplyr::select(`Sample-ID`, 
+    dplyr::select(`Sample-ID`,
                   `Phenotype_complete`, #
-                  `Chr:Pos`, 
-                  `Ref/Alt`,
+                  `Chr:Pos`,
                   `RefSeq Genes 110, NCBI`, #
                   `Effect (Combined)`,
                   `HGVS c. (Clinically Relevant)`,
@@ -1066,17 +1035,35 @@ plot_combined_track <- function(vars_genomic_df,
   
   ##dynamische Y-Achsenbeschriftung
   has_nc <- !is.null(vars_genomic_nc_plot) && nrow(vars_genomic_nc_plot) > 0
-  
-  if (has_nc) {
+  has_exom <- !is.null(vars_exomic_df) && nrow(vars_exomic_df) > 0
+
+  if (has_nc && has_exom) {
+
     y_breaks <- c(Y_GENOMIC_NC, Y_GENOMIC_LOF, Y_GENOMIC_MISS, Y_GENOMIC_OTHER,
                   Y_EXOM_OTHER, Y_EXOM_MISS, Y_EXOM_LOF)
+
     y_labels <- c("non-coding (GS)", "LoF (GS)", "Missense (GS)", "Other (GS)",
                   "Other (ES)", "Missense (ES)", "LoF (ES)")
-  } else {
+
+  } else if (has_nc && !has_exom) {
+
+    y_breaks <- c(Y_GENOMIC_NC, Y_GENOMIC_LOF, Y_GENOMIC_MISS, Y_GENOMIC_OTHER)
+
+    y_labels <- c("non-coding (GS)", "LoF (GS)", "Missense (GS)", "Other (GS)")
+
+  } else if (!has_nc && has_exom) {
+
     y_breaks <- c(Y_GENOMIC_LOF, Y_GENOMIC_MISS, Y_GENOMIC_OTHER,
                   Y_EXOM_OTHER, Y_EXOM_MISS, Y_EXOM_LOF)
+
     y_labels <- c("LoF (GS)", "Missense (GS)", "Other (GS)",
                   "Other (ES)", "Missense (ES)", "LoF (ES)")
+
+  } else {
+
+    y_breaks <- c(Y_GENOMIC_LOF, Y_GENOMIC_MISS, Y_GENOMIC_OTHER)
+
+    y_labels <- c("LoF (GS)", "Missense (GS)", "Other (GS)")
   }
   
   ##Genom- & Exom-Varianten aufbereiten
@@ -1138,12 +1125,18 @@ plot_combined_track <- function(vars_genomic_df,
     if (has_nc) Y_GENOMIC_NC - 0.05,
     Y_GENOMIC_LOF   - 0.05,
     Y_GENOMIC_MISS  - 0.05,
-    Y_GENOMIC_OTHER - 0.05,
-    0               - 0.05,
-    Y_EXOM_OTHER    - 0.05,
-    Y_EXOM_MISS     - 0.05
+    Y_GENOMIC_OTHER - 0.05
   )
-  
+
+  if (has_exom) {
+    separator_y <- c(
+      separator_y,
+      -0.05,
+      Y_EXOM_OTHER - 0.05,
+      Y_EXOM_MISS  - 0.05
+    )
+  }
+
   p <- p +
     geom_segment(
       data = data.frame(y = separator_y),
@@ -1330,7 +1323,7 @@ plot_combined_track <- function(vars_genomic_df,
           hjust         = 0.5,
           segment.color = NA,
           max.overlaps  = 50,
-          size          = 5
+          size          = 7
         )
     }
   }
@@ -1370,7 +1363,7 @@ plot_combined_track <- function(vars_genomic_df,
           hjust         = 0.5,
           segment.color = NA,
           max.overlaps  = 50,
-          size          = 5
+          size          = 7
         )
     }
   }
@@ -1401,7 +1394,7 @@ plot_combined_track <- function(vars_genomic_df,
           hjust         = 0.5,
           segment.color = NA,
           max.overlaps  = 50,
-          size          = 5
+          size          = 7
         )
     }
   }
@@ -1410,8 +1403,8 @@ plot_combined_track <- function(vars_genomic_df,
   p <- p + scale_shape_manual(values = shape_map, guide = "none")
   
   p <- p + scale_size_manual(
-    values = c(`FALSE` = 3, `TRUE` = 4),  # 3 = nur Genom, 5 = Genom+Exom
-    guide  = "none" 
+    values = c(`FALSE` = 4, `TRUE` = 4),  # 3 = nur Genom, 5 = Genom+Exom
+    guide  = "none"
   )
   
   if (!is.null(phenotype_colors)) {
@@ -1422,35 +1415,41 @@ plot_combined_track <- function(vars_genomic_df,
     p <- p + scale_color_discrete(name = "")
   }
   
-  p <- p + ggtitle(plot_title)       
-  
+  p <- p + ggtitle(plot_title)
+
+  y_limits <- if (has_exom) {
+    c(-0.50, 0.65)
+  } else {
+    c(-0.05, 0.9)
+  }
   p <- p +
-    theme_cowplot() +
+    theme_cowplot()+
     theme(
       legend.position      = "bottom",
       legend.justification = "center",
       legend.box           = "vertical",
-      
-      legend.title = element_text(size = 16),   # ← HIER
-      legend.text  = element_text(size = 16),   # hast du schon
-      
+
+      legend.title = element_text(size = 20),
+      legend.text  = element_text(size = 20),
+
       axis.line.x  = element_line(color = "black", linewidth = 0.6),
       axis.text.x  = element_blank(),
       axis.ticks.x = element_blank(),
       axis.title.x = element_blank(),
       axis.line.y  = element_line(color = "black"),
       axis.ticks.y = element_line(color = "black"),
-      axis.text.y  = element_text(size = 16, hjust = 1),
+      axis.text.y  = element_text(size = 20, hjust = 1),
       axis.title.y = element_blank(),
-      plot.title   = element_text(size = 20, face = "bold")
+      plot.title   = element_text(size = 26, face = "bold")
     )+
-    
+
     xlab(paste0("Transcript: ", transcript_id,
                 "    Shapes: ", shape_legend_text)) +
-    scale_y_continuous(
-      breaks = y_breaks,
-      labels = y_labels,
-      limits = c(-0.50, 0.65)
+
+  scale_y_continuous(
+    breaks = y_breaks,
+    labels = y_labels,
+    limits = y_limits
     ) +
     guides(
       color = guide_legend(override.aes = list(
@@ -1477,14 +1476,55 @@ plot_combined_track <- function(vars_genomic_df,
 plot_density_panel <- function(x_positions, tx_min, tx_max,
                                strand = 1, vlines = NULL,
                                n = 1024, adjust = 1) {
-  
+
   x_positions <- as.numeric(unlist(x_positions, use.names = FALSE))
   x_positions <- x_positions[is.finite(x_positions)]
-  
+
   if (length(x_positions) < 2) {
-    return(ggplot() + theme_void())
+
+    p <- ggplot() +
+      annotate(
+        "text",
+        x = (tx_min + tx_max) / 2,
+        y = 0.5,
+        label = "No UK Biobank variants",
+        size = 5
+      ) +
+      labs(
+        y = "UK Biobank\nnormalized density",
+        x = NULL
+      ) +
+      theme_cowplot() +
+      theme(
+        plot.title   = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank()
+      )
+
+    if (strand == -1) {
+      p <- p + scale_x_reverse(
+        limits = c(tx_max + INTRON_GAP, tx_min - INTRON_GAP)
+      )
+    } else {
+      p <- p + scale_x_continuous(
+        limits = c(tx_min - INTRON_GAP, tx_max + INTRON_GAP)
+      )
+    }
+    if (!is.null(vlines) && length(vlines) > 0) {
+      p <- p +
+        geom_vline(
+          xintercept = vlines,
+          linewidth = 0.6,
+          color = "red",
+          alpha = 0.8
+        )
+    }
+    return(
+      p + coord_cartesian(ylim = c(0, 1))
+    )
   }
-  
+
   dens <- density(
     x_positions,
     from = tx_min - INTRON_GAP,
@@ -1492,12 +1532,17 @@ plot_density_panel <- function(x_positions, tx_min, tx_max,
     n = n,
     adjust = adjust
   )
-  
-  density_df <- data.frame(x = dens$x, y = dens$y)
-  
+
+  density_df <- data.frame(
+    x = dens$x,
+    y = dens$y / GLOBAL_MAX_DENS
+  )
+
   p <- ggplot(density_df, aes(x = x, y = y)) +
     geom_line(linewidth = 0.7) +
-    labs(y = "UK_Biobank\nrelative density\n(AF<0.1%)", x = NULL) +
+    labs(
+      y = "UK Biobank\nnormalized density",
+      x = NULL)+
     theme_cowplot() +
     theme(
       plot.title   = element_blank(),
@@ -1505,38 +1550,38 @@ plot_density_panel <- function(x_positions, tx_min, tx_max,
       axis.text.x  = element_blank(),
       axis.ticks.x = element_blank()
     )
-  
+
   if (!is.null(vlines) && length(vlines) > 0) {
     vdf <- data.frame(x = vlines[is.finite(vlines)])
     p <- p + geom_vline(
-      data = vdf, 
-      aes(xintercept = x), 
-      linewidth = 0.6, 
+      data = vdf,
+      aes(xintercept = x),
+      linewidth = 0.6,
       color = "red",
       alpha = 0.8)
   }
-  
+
   if (strand == -1) {
     p <- p + scale_x_reverse(limits = c(tx_max + INTRON_GAP, tx_min - INTRON_GAP))
   } else {
     p <- p + scale_x_continuous(limits = c(tx_min - INTRON_GAP, tx_max + INTRON_GAP))
   }
-  
+
   p
 }
 
 ##Density-Plot gnomAD
 plot_density_panel2 <- function(x_positions2, tx_min, tx_max,
-                                strand = 1, vlines = NULL,
-                                n = 1024, adjust = 1) {
-  
+                               strand = 1, vlines = NULL,
+                               n = 1024, adjust = 1) {
+
   x_positions2 <- as.numeric(unlist(x_positions2, use.names = FALSE))
   x_positions2 <- x_positions2[is.finite(x_positions2)]
-  
+
   if (length(x_positions2) < 2) {
     return(ggplot() + theme_void())
   }
-  
+
   dens2 <- density(
     x_positions2,
     from = tx_min - INTRON_GAP,
@@ -1544,12 +1589,17 @@ plot_density_panel2 <- function(x_positions2, tx_min, tx_max,
     n = n,
     adjust = adjust
   )
-  
-  density_df2 <- data.frame(x = dens2$x, y = dens2$y)
-  
+
+  density_df2 <- data.frame(
+    x = dens2$x,
+    y = dens2$y / GLOBAL_MAX_DENS
+  )
+
   p <- ggplot(density_df2, aes(x = x, y = y)) +
     geom_line(linewidth = 0.7) +
-    labs(y = "gnomAD 4.0\nrelative density\n(AF<0.1%)", x = NULL) +
+    labs(
+      y = "gnomAD 4.0\nnormalized density",
+      x = NULL) +
     theme_cowplot() +
     theme(
       plot.title   = element_blank(),
@@ -1557,24 +1607,24 @@ plot_density_panel2 <- function(x_positions2, tx_min, tx_max,
       axis.text.x  = element_blank(),
       axis.ticks.x = element_blank()
     )
-  
+
   if (!is.null(vlines) && length(vlines) > 0) {
     vdf2 <- data.frame(x = vlines[is.finite(vlines)])
     p <- p + geom_vline(
-      data = vdf2, 
-      aes(xintercept = x), 
-      linewidth = 0.6, 
+     data = vdf2,
+      aes(xintercept = x),
+      linewidth = 0.6,
       color = "red",
       alpha = 0.8)
-  }
-  
+     }
+
   if (strand == -1) {
-    p <- p + scale_x_reverse(limits = c(tx_max + INTRON_GAP, tx_min - INTRON_GAP))
-  } else {
-    p <- p + scale_x_continuous(limits = c(tx_min - INTRON_GAP, tx_max + INTRON_GAP))
-  }
-  
-  p
+   p <- p + scale_x_reverse(limits = c(tx_max + INTRON_GAP, tx_min - INTRON_GAP))
+ } else {
+   p <- p + scale_x_continuous(limits = c(tx_min - INTRON_GAP, tx_max + INTRON_GAP))
+ }
+
+ p
 }
 
 
@@ -1631,31 +1681,31 @@ dens_gnom <- if (length(gnomAD_scaled_x) >= 2) {
           n = DENSITY_N, adjust = DENSITY_ADJUST)
 } else NULL
 
-YMAX_DENS <- max(
-  if (!is.null(dens_ukb))  dens_ukb$y  else 0,
-  if (!is.null(dens_gnom)) dens_gnom$y else 0,
+GLOBAL_MAX_DENS <- max(
+  if (!is.null(dens_ukb))  max(dens_ukb$y)  else 0,
+  if (!is.null(dens_gnom)) max(dens_gnom$y) else 0,
   na.rm = TRUE
 )
 
 density_plot <- plot_density_panel(
-  x_positions = UKB_scaled_x,     
+  x_positions = UKB_scaled_x,
   tx_min = TX_MIN,
   tx_max = TX_MAX,
   strand = strand,
-  vlines = case_x,                
+  vlines = case_x,
   n = DENSITY_N,
   adjust = DENSITY_ADJUST
-) + coord_cartesian(ylim = c(0, YMAX_DENS))
+)+ coord_cartesian(ylim = c(0, 1))
 
 density_plot2 <- plot_density_panel2(
-  x_positions2 = gnomAD_scaled_x,     
+  x_positions2 = gnomAD_scaled_x,
   tx_min = TX_MIN,
   tx_max = TX_MAX,
   strand = strand,
-  vlines = case_x,                
+  vlines = case_x,
   n = DENSITY_N,
   adjust = DENSITY_ADJUST
-) + coord_cartesian(ylim = c(0, YMAX_DENS))
+)+ coord_cartesian(ylim = c(0, 1))
 
 final_plot <- cowplot::plot_grid(
   gene_plot,
