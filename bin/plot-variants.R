@@ -1448,8 +1448,8 @@ plot_combined_track <- function(vars_genomic_df,
       legend.justification = "center",
       legend.box           = "vertical",
 
-      legend.title = element_text(size = 20, margin = margin(r = 40, unit = "pt")),
-      legend.text  = element_text(size = 20, margin = margin(l = 10, r = 40, unit = "pt")),
+      legend.title = element_text(size = 16, margin = margin(r = 45, unit = "pt")),
+      legend.text  = element_text(size = 18, margin = margin(l = 10, r = 25, unit = "pt")),
 
       axis.line.x  = element_line(color = "black", linewidth = 0.6),
       axis.text.x  = element_blank(),
