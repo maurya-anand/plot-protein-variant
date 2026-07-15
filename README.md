@@ -24,7 +24,7 @@ GENE-1
 GENE-2
 ```
 
-Gene symbols are case-insensitive — the pipeline uppercases each entry before use, so `notch1`, `Notch1`, and `NOTCH1` are all equivalent.
+Gene symbols are case-insensitive. The pipeline uppercases each entry before use, so `notch1` and `NOTCH1` refer to the same gene.
 
 - **Configure your reference and parameters** in `nextflow.config` or simply provide the parameters from the command line:
 
@@ -106,7 +106,7 @@ If a gene's output looks wrong or missing, check `<outdir>/<gene>/FETCH_GENE_INF
 
 ## Input File Schema
 
-A file's extension does not indicate how it's parsed — match the actual format and delimiter below, not just the column names. For example, `--exonic` is parsed as plaintext, not Excel, and `--UK_Biobank` is tab-delimited, not comma-delimited.
+A file's extension does not indicate how it's parsed. Match the actual format and delimiter below, not just the column names. For example, `--exonic` is parsed as plaintext, not Excel, and `--UK_Biobank` is tab-delimited, not comma-delimited.
 
 This covers only the params you pass to `nextflow run main.nf`. The pipeline also derives a couple of gene-specific inputs (protein domain coordinates, canonical transcript ID) on its own per gene, so there's nothing extra to supply for those.
 
@@ -116,8 +116,8 @@ This covers only the params you pass to `nextflow run main.nf`. The pipeline als
 | `--exonic` | plaintext | `;` | same columns as `--genomic` |
 | `--genomic_noncoding` | plaintext | `;` | `Sample-ID`, `Phenotype_complete`, `Chr:Pos`, `RefSeq Genes 110, NCBI`, `Effect (Combined)`, `HGVS c. (Clinically Relevant)`, `Alt Allele Counts (AC)` (no gnomAD/PHRED/REVEL/AC filtering is applied to this file) |
 | `--sv` | plaintext | `;` | `Sample-ID`, `Phenotype_complete`, `Chr:Pos`, `RefSeq Genes 110, NCBI`, `Effect (Combined)`, `HGVS g. (Clinically Relevant)`, `Alt Allele Counts (AC)` |
-| `--gnomAD` | plaintext | `,` | `chrom`, `pos`, `AF_nfe` (`chrom` must use Ensembl's bare seq-region naming, e.g. `1`, `X`, `MT` — not `chr1`/`chrX`) |
-| `--UK_Biobank` | plaintext | `\t` | `SYMBOL`, `old_gnomAD_AF`, `Location` (format `chrom:pos`, e.g. `1:12345` — used to place variants on the density panel) |
+| `--gnomAD` | plaintext | `,` | `chrom`, `pos`, `AF_nfe` (`chrom` must use Ensembl's bare seq-region naming, e.g. `1`, `X`, `MT`, not `chr1`/`chrX`) |
+| `--UK_Biobank` | plaintext | `\t` | `SYMBOL`, `old_gnomAD_AF`, `Location` (format `chrom:pos`, e.g. `1:12345`, used to place variants on the density panel) |
 | `--colour_phenotypes` | xlsx | | `Phenotype_complete`, `Colorcode` |
 | `--encode_file` | genome annotation track (BED/GFF/GTF, format auto-detected from the file extension) | | standard track fields (chrom/start/end); a 4th metadata column or `name` column is used as the element label if present |
 | `--refseq_file` | genome annotation track (BED/GFF/GTF, format auto-detected from the file extension) | | same as `--encode_file` |
