@@ -24,6 +24,8 @@ GENE-1
 GENE-2
 ```
 
+Gene symbols are case-insensitive — the pipeline uppercases each entry before use, so `notch1`, `Notch1`, and `NOTCH1` are all equivalent.
+
 - **Configure your reference and parameters** in `nextflow.config` or simply provide the parameters from the command line:
 
 ```groovy
@@ -91,6 +93,8 @@ nextflow run main.nf \
 
 `pipeline_info/` is written once per run and covers the whole gene list (timeline, resource report, trace, DAG), not per-gene.
 
+`<GENE>_genomic_table.csv` / `<GENE>_exonic_table.csv` use the same `;`-delimited, comma-decimal convention as the pipeline's plaintext inputs (e.g. `20,5`, not `20.5`), not standard comma-delimited CSV. Open them accordingly, or a comma-locale CSV reader will misparse them into a single column.
+
 ### Per-gene failure handling
 
 Genes are processed independently, and one gene's failure never stops the run for the rest of the list:
@@ -112,7 +116,7 @@ This covers only the params you pass to `nextflow run main.nf`. The pipeline als
 | `--exonic` | plaintext | `;` | same columns as `--genomic` |
 | `--genomic_noncoding` | plaintext | `;` | `Sample-ID`, `Phenotype_complete`, `Chr:Pos`, `RefSeq Genes 110, NCBI`, `Effect (Combined)`, `HGVS c. (Clinically Relevant)`, `Alt Allele Counts (AC)` (no gnomAD/PHRED/REVEL/AC filtering is applied to this file) |
 | `--sv` | plaintext | `;` | `Sample-ID`, `Phenotype_complete`, `Chr:Pos`, `RefSeq Genes 110, NCBI`, `Effect (Combined)`, `HGVS g. (Clinically Relevant)`, `Alt Allele Counts (AC)` |
-| `--gnomAD` | plaintext | `,` | `chrom`, `pos`, `AF_nfe` |
+| `--gnomAD` | plaintext | `,` | `chrom`, `pos`, `AF_nfe` (`chrom` must use Ensembl's bare seq-region naming, e.g. `1`, `X`, `MT` — not `chr1`/`chrX`) |
 | `--UK_Biobank` | plaintext | `\t` | `SYMBOL`, `old_gnomAD_AF` |
 | `--colour_phenotypes` | xlsx | | `Phenotype_complete`, `Colorcode` |
 | `--encode_file` | genome annotation track (BED/GFF/GTF, format auto-detected from the file extension) | | standard track fields (chrom/start/end); a 4th metadata column or `name` column is used as the element label if present |
