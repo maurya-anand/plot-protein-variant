@@ -1471,11 +1471,20 @@ plot_combined_track <- function(vars_genomic_df,
     limits = y_limits
     ) +
     guides(
-      color = guide_legend(override.aes = list(
-        shape = 16,
-        size  = 2,
-        fill  = NA
-      ))
+      color = guide_legend(
+        order = 1,
+        override.aes = list(
+          shape = 16,
+          size  = 2,
+          fill  = NA
+        ),
+        title.position = "top"
+      ),
+      fill = guide_legend(
+        order = 2,
+        nrow = 1,
+        title.position = "top"
+      )
     )
   
   if (strand == -1) {
