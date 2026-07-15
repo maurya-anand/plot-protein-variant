@@ -5,7 +5,7 @@ nextflow.enable.dsl = 2
 workflow {
     def gene_list_ch = channel.fromPath(params.gene_list)
         .splitText()
-        .map { gene -> gene.trim() }
+        .map { gene -> gene.trim().toUpperCase() }
 
     def info_ch = FETCH_GENE_INFO(gene_list_ch)
 
