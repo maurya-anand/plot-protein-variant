@@ -11,13 +11,13 @@ Nextflow pipeline to fetch gene domain/transcript info and generate per-gene gen
 
 ## Setup
 
-- **Setup dependencies**:
+- Setup dependencies:
 
 ```bash
 make install
 ```
 
-- **Prepare a gene-list**:
+- Prepare a gene-list:
 
 ```text
 GENE-1
@@ -26,7 +26,7 @@ GENE-2
 
 Gene symbols are case-insensitive. The pipeline uppercases each entry before use, so `notch1` and `NOTCH1` refer to the same gene.
 
-- **Configure your reference and parameters** in `nextflow.config` or simply provide the parameters from the command line:
+- Configure your reference and parameters in `nextflow.config` or simply provide the parameters from the command line:
 
 ```groovy
 params {
@@ -106,7 +106,7 @@ If a gene's output looks wrong or missing, check `<outdir>/<gene>/FETCH_GENE_INF
 
 ## Input File Schema
 
-A file's extension does not indicate how it's parsed. Match the actual format and delimiter below, not just the column names. For example, `--exonic` is parsed as plaintext, not Excel, and `--UK_Biobank` is tab-delimited, not comma-delimited.
+Each param is parsed according to the format and delimiter listed below, regardless of its file extension. For example, `--exonic` is parsed as plaintext, not Excel, and `--UK_Biobank` is tab-delimited, not comma-delimited.
 
 This covers only the params you pass to `nextflow run main.nf`. The pipeline also derives a couple of gene-specific inputs (protein domain coordinates, canonical transcript ID) on its own per gene, so there's nothing extra to supply for those.
 
@@ -127,7 +127,7 @@ This covers only the params you pass to `nextflow run main.nf`. The pipeline als
 `--genomic` and `--exonic` rows are additionally matched to the gene by a regex on `RefSeq Genes 110, NCBI`, and a variant is kept in the plot only if it passes all of:
 
 - `gnomAD Genomes Variant Frequencies 4.0 v2, BROAD` &le; 0.001 (or missing)
-- `PHRED-Score` &ge; 20 **or** `REVEL-Score` &ge; 0.5
+- `PHRED-Score` &ge; 20 or `REVEL-Score` &ge; 0.5
 - `Alt Allele Counts (AC)` &le; 4
 
 These thresholds are fixed inside the pipeline, not exposed as CLI options. If a gene produces no plot, check its input rows against these cutoffs before assuming the pipeline is broken.
