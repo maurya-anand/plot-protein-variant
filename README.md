@@ -117,7 +117,7 @@ This covers only the params you pass to `nextflow run main.nf`. The pipeline als
 | `--genomic_noncoding` | plaintext | `;` | `Sample-ID`, `Phenotype_complete`, `Chr:Pos`, `RefSeq Genes 110, NCBI`, `Effect (Combined)`, `HGVS c. (Clinically Relevant)`, `Alt Allele Counts (AC)` (no gnomAD/PHRED/REVEL/AC filtering is applied to this file) |
 | `--sv` | plaintext | `;` | `Sample-ID`, `Phenotype_complete`, `Chr:Pos`, `RefSeq Genes 110, NCBI`, `Effect (Combined)`, `HGVS g. (Clinically Relevant)`, `Alt Allele Counts (AC)` |
 | `--gnomAD` | plaintext | `,` | `chrom`, `pos`, `AF_nfe` (`chrom` must use Ensembl's bare seq-region naming, e.g. `1`, `X`, `MT` — not `chr1`/`chrX`) |
-| `--UK_Biobank` | plaintext | `\t` | `SYMBOL`, `old_gnomAD_AF` |
+| `--UK_Biobank` | plaintext | `\t` | `SYMBOL`, `old_gnomAD_AF`, `Location` (format `chrom:pos`, e.g. `1:12345` — used to place variants on the density panel) |
 | `--colour_phenotypes` | xlsx | | `Phenotype_complete`, `Colorcode` |
 | `--encode_file` | genome annotation track (BED/GFF/GTF, format auto-detected from the file extension) | | standard track fields (chrom/start/end); a 4th metadata column or `name` column is used as the element label if present |
 | `--refseq_file` | genome annotation track (BED/GFF/GTF, format auto-detected from the file extension) | | same as `--encode_file` |
